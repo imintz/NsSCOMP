@@ -129,11 +129,6 @@ BEGIN
 
 	IO_WRITE <= IO_WRITE_INT;
 
-	WITH STATE SELECT FETCH_OUT <= 
-		'1' WHEN FETCH,
-		'0' WHEN OTHERS;
-
-
 	PROCESS (CLOCK, RESETN)
 	BEGIN
 		IF (RESETN = '0') THEN          -- Active low, asynchronous reset
