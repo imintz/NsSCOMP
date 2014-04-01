@@ -5,6 +5,7 @@ LIBRARY LPM;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.MATH_REAL.ALL;
 USE ALTERA_MF.ALTERA_MF_COMPONENTS.ALL;
 USE LPM.LPM_COMPONENTS.ALL;
 
@@ -46,7 +47,9 @@ ARCHITECTURE a OF SCOMP IS
 		EX_RETURN,
 		EX_IN,
 		EX_OUT,
-		EX_OUT2
+		EX_OUT2,
+		EX_SQRT,
+		EX_POW
 	);
 
 	TYPE STACK_TYPE IS ARRAY (0 TO 7) OF STD_LOGIC_VECTOR(9 DOWNTO 0);
@@ -191,7 +194,11 @@ BEGIN
 						WHEN "010011" =>       -- OUT
 							STATE <= EX_OUT;
 							IO_WRITE_INT <= '1';
-
+						WHEN "010100" =>       -- SQRT
+							STATE <= EX_SQRT;
+						WHEN "010101" =>       -- POW
+							STATE <= EX_POW;
+						
 						WHEN OTHERS =>
 							STATE <= FETCH;      -- Invalid opcodes default to NOP
 					END CASE;
@@ -294,6 +301,14 @@ BEGIN
 				WHEN EX_OUT2 =>
 					STATE <= FETCH;
 					IO_WRITE_INT <= '0';
+					
+				WHEN EX_SQRT =>
+					AC 	  <= SQRT(AC);
+					STATE <= FETCH;
+					
+				WHEN EX_POW =>
+					AC	  <= AC**IR(9 downto 0);
+					STATE <= FETCH;
 
 				WHEN OTHERS =>
 					STATE <= FETCH;          -- If an invalid state is reached, return to FETCH
