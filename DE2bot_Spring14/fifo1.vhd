@@ -46,6 +46,7 @@ ENTITY fifo1 IS
 		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 		rdreq		: IN STD_LOGIC ;
 		wrreq		: IN STD_LOGIC ;
+		empty		: OUT STD_LOGIC ;
 		full		: OUT STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
@@ -54,8 +55,9 @@ END fifo1;
 
 ARCHITECTURE SYN OF fifo1 IS
 
-	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (7 DOWNTO 0);
-	SIGNAL sub_wire1	: STD_LOGIC ;
+	SIGNAL sub_wire0	: STD_LOGIC ;
+	SIGNAL sub_wire1	: STD_LOGIC_VECTOR (7 DOWNTO 0);
+	SIGNAL sub_wire2	: STD_LOGIC ;
 
 
 
@@ -74,6 +76,7 @@ ARCHITECTURE SYN OF fifo1 IS
 	);
 	PORT (
 			rdreq	: IN STD_LOGIC ;
+			empty	: OUT STD_LOGIC ;
 			clock	: IN STD_LOGIC ;
 			q	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 			wrreq	: IN STD_LOGIC ;
@@ -83,8 +86,9 @@ ARCHITECTURE SYN OF fifo1 IS
 	END COMPONENT;
 
 BEGIN
-	q    <= sub_wire0(7 DOWNTO 0);
-	full    <= sub_wire1;
+	empty    <= sub_wire0;
+	q    <= sub_wire1(7 DOWNTO 0);
+	full    <= sub_wire2;
 
 	scfifo_component : scfifo
 	GENERIC MAP (
@@ -104,8 +108,9 @@ BEGIN
 		clock => clock,
 		wrreq => wrreq,
 		data => data,
-		q => sub_wire0,
-		full => sub_wire1
+		empty => sub_wire0,
+		q => sub_wire1,
+		full => sub_wire2
 	);
 
 
@@ -122,7 +127,7 @@ END SYN;
 -- Retrieval info: PRIVATE: CLOCKS_ARE_SYNCHRONIZED NUMERIC "1"
 -- Retrieval info: PRIVATE: Clock NUMERIC "0"
 -- Retrieval info: PRIVATE: Depth NUMERIC "128"
--- Retrieval info: PRIVATE: Empty NUMERIC "0"
+-- Retrieval info: PRIVATE: Empty NUMERIC "1"
 -- Retrieval info: PRIVATE: Full NUMERIC "1"
 -- Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone II"
 -- Retrieval info: PRIVATE: LE_BasedFIFO NUMERIC "0"
@@ -159,6 +164,7 @@ END SYN;
 -- Retrieval info: CONSTANT: USE_EAB STRING "ON"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL clock
 -- Retrieval info: USED_PORT: data 0 0 8 0 INPUT NODEFVAL data[7..0]
+-- Retrieval info: USED_PORT: empty 0 0 0 0 OUTPUT NODEFVAL empty
 -- Retrieval info: USED_PORT: full 0 0 0 0 OUTPUT NODEFVAL full
 -- Retrieval info: USED_PORT: q 0 0 8 0 OUTPUT NODEFVAL q[7..0]
 -- Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL rdreq
@@ -169,6 +175,7 @@ END SYN;
 -- Retrieval info: CONNECT: @rdreq 0 0 0 0 rdreq 0 0 0 0
 -- Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: full 0 0 0 0 @full 0 0 0 0
+-- Retrieval info: CONNECT: empty 0 0 0 0 @empty 0 0 0 0
 -- Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 -- Retrieval info: GEN_FILE: TYPE_NORMAL fifo1.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL fifo1.inc FALSE
