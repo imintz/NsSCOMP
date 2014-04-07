@@ -1,0 +1,26 @@
+-- Altera Memory Initialization File (MIF)
+
+DEPTH = 1024;
+WIDTH = 16;
+
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+  BEGIN
+    [000..3FF] : 0000;  -- Default to NOP
+
+           000 : 040B;  -- 	LOAD	Input
+           001 : 4C01;  -- 	OUT		LEDS
+           002 : 0014;  -- 	SQRT
+           003 : 080B;  -- 	STORE	Input
+           004 : 4C02;  -- 	OUT		TIMER
+           005 : 4802;  -- Wait:	IN Timer
+           006 : 100C;  -- 	SUB		WaitT
+           007 : 1C05;  -- 	JPOS	Wait
+           008 : 040B;  -- 	LOAD	Input
+           009 : 4C01;  -- 	OUT		LEDS
+           00A : 140A;  -- HERE: JUMP HERE
+           00B : 0100;  -- Input:	DW	&H100
+           00C : 0014;  -- WaitT:	DW	20
+  END;
