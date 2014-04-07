@@ -309,7 +309,7 @@ BEGIN
 				WHEN EX_SQRT =>		--Dijkstra Square root
 					MASK <= x"4000";
 					REMAINDER <= AC;
-					FOR i IN 0 TO 15 LOOP
+					FOR i IN 0 TO 7 LOOP
 						IF (REMAINDER > (ROOT+MASK)) THEN
 							REMAINDER <= REMAINDER - ROOT - MASK;
 							ROOT <= ROOT + MASK + MASK;
