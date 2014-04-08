@@ -4243,12 +4243,6 @@ applicable agreement for further details.
 	(pt 104 280)
 )
 (connector
-	(text "IO_DATA[7..0]" (rect 434 2360 505 2372)(font "Arial" ))
-	(pt 384 2376)
-	(pt 504 2376)
-	(bus)
-)
-(connector
 	(text "NEMPTY" (rect 448 2376 492 2388)(font "Arial" ))
 	(pt 384 2392)
 	(pt 504 2392)
@@ -4424,9 +4418,25 @@ applicable agreement for further details.
 	(pt 176 2584)
 )
 (connector
-	(text "IO_DATA[7..0]" (rect 434 2552 505 2564)(font "Arial" ))
+	(text "IO_DATA[7..0]" (rect 426 2552 497 2564)(font "Arial" ))
+	(pt 528 2568)
 	(pt 384 2568)
-	(pt 504 2568)
+	(bus)
+)
+(connector
+	(pt 528 2568)
+	(pt 528 2376)
+	(bus)
+)
+(connector
+	(text "IO_DATA[7..0]" (rect 434 2360 505 2372)(font "Arial" ))
+	(pt 384 2376)
+	(pt 528 2376)
+	(bus)
+)
+(connector
+	(pt 528 2376)
+	(pt 568 2376)
 	(bus)
 )
 (junction (pt 552 808))
@@ -4446,6 +4456,7 @@ applicable agreement for further details.
 (junction (pt 856 2456))
 (junction (pt 808 2232))
 (junction (pt 144 2440))
+(junction (pt 528 2376))
 (text "ALL I/O decoding is done" (rect -136 2800 6 2814)(font "Arial" (font_size 8)))
 (text "here, instead of having" (rect -136 2816 -6 2830)(font "Arial" (font_size 8)))
 (text "AND/NAND decoders or" (rect -136 2832 0 2846)(font "Arial" (font_size 8)))
@@ -4464,3 +4475,4 @@ applicable agreement for further details.
 (text "LEDG[8] (between the 7-segs) solid-on indicates that the watchdog timer is being toggled successfully; it should mimic the condition of the green LED on the robot." (rect -160 216 762 230)(font "Arial" (font_size 8)))
 (text "If LEDG[8] is flashing, then the battery is too low to run the motors.  It matches the state of the yellow LED on the robot." (rect -160 232 514 246)(font "Arial" (font_size 8)))
 (text "This \"one-shot\" I2C controller configures the audio codec at boot.  You do not need to modify this module." (rect 144 1960 742 1974)(font "Arial" (font_size 8)))
+(text "1" (rect -32 2640 -25 2654)(font "Arial" (font_size 8)))
