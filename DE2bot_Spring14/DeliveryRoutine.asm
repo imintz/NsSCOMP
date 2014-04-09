@@ -23,25 +23,44 @@ WaitForUser:
 Main: ; "Real" program starts here.
 	OUT     RESETODO    ; reset odometry in case wheels moved after programming
 Go2ft:
-	LOAD    FSlow       ; Very slow forward movement
-	OUT     LVELCMD     ; commmand motors
-	OUT     RVELCMD
+	;LOAD    FSlow       ; Very slow forward movement
+	;OUT     LVELCMD     ; commmand motors
+	;OUT     RVELCMD
 	; display velocity just as FYI
-	IN      LVEL        ; read left velocity
-	STORE   Temp        ; save it
-	IN      RVEL        ; read right velocity
-	ADD     Temp        ; add to left velocity
-	SHIFT   -1          ; divide by 2 (average)
-	OUT     SSEG1       ; display it
+	;IN      LVEL        ; read left velocity
+	;STORE   Temp        ; save it
+	;IN      RVEL        ; read right velocity
+	;ADD     Temp        ; add to left velocity
+	;SHIFT   -1          ; divide by 2 (average)
+	;OUT     SSEG1       ; display it
 	
-	IN      XPOS        ; get current X position
-	SUB     TwoFeet     ; check the distance
-	JNEG    Go2ft       ; not there yet; keep checking
+	;IN      XPOS        ; get current X position
+	;SUB     TwoFeet     ; check the distance
+	;JNEG    Go2ft       ; not there yet; keep checking
 	; at this point, we're past the desired distance
-	LOAD    Zero
-	OUT     LVELCMD     ; stop
-	OUT     RVELCMD
-	JUMP    WaitForUser ; repeat
+	;LOAD    Zero
+	;OUT     LVELCMD     ; stop
+	;OUT     RVELCMD
+	;JUMP    WaitForUser ; repeat
+	
+test:	LOAD	Seven
+		OUT		UART
+		CALL	Wait1
+		IN		UART_CHK
+		JZERO	Fail
+		OUT		BEEP
+		CALL	WAIT1
+		OUT 	BEEP
+		CALL	WAIT1
+		OUT		BEEP
+		CALL	WAIT1
+		JUMP	end
+		
+fail:	OUT		BEEP
+		CALL	WAIT1
+		OUT		BEEP
+				
+end:	JUMP	end	
 
 	
 ;***** SUBROUTINES
@@ -246,6 +265,7 @@ I2C_CMD:  EQU &H90  ; I2C module's CMD register,
 I2C_DATA: EQU &H91  ; ... DATA register,
 I2C_RDY:  EQU &H92  ; ... and BUSY register
 UART:     EQU &H98  ; The basic UART interface provided
+UART_CHK: EQU &H99
 ; 0x98-0x9F are reserved for any additional UART functions you create
 SONAR:    EQU &HA0  ; base address for more than 16 registers....
 DIST0:    EQU &HA8  ; the eight sonar distance readings

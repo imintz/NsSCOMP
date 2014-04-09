@@ -24,22 +24,22 @@ CONTENT
            00B : 2C5F;  -- 	XOR     Mask4       ; KEY3 is active low; invert SAFETY to match
            00C : 1C09;  -- 	JPOS    WaitForUser ; one of those is not ready, so try again
            00D : 4CC3;  -- 	OUT     RESETODO    ; reset odometry in case wheels moved after programming
-           00E : 0457;  -- 	LOAD    FSlow       ; Very slow forward movement
-           00F : 4C83;  -- 	OUT     LVELCMD     ; commmand motors
-           010 : 4C8B;  -- 	OUT     RVELCMD
-           011 : 4882;  -- 	IN      LVEL        ; read left velocity
-           012 : 084B;  -- 	STORE   Temp        ; save it
-           013 : 488A;  -- 	IN      RVEL        ; read right velocity
-           014 : 0C4B;  -- 	ADD     Temp        ; add to left velocity
-           015 : 3011;  -- 	SHIFT   -1          ; divide by 2 (average)
-           016 : 4C04;  -- 	OUT     SSEG1       ; display it
-           017 : 48C0;  -- 	IN      XPOS        ; get current X position
-           018 : 1067;  -- 	SUB     TwoFeet     ; check the distance
-           019 : 180E;  -- 	JNEG    Go2ft       ; not there yet; keep checking
-           01A : 044C;  -- 	LOAD    Zero
-           01B : 4C83;  -- 	OUT     LVELCMD     ; stop
-           01C : 4C8B;  -- 	OUT     RVELCMD
-           01D : 1409;  -- 	JUMP    WaitForUser ; repeat
+           00E : 0453;  -- test:	LOAD	Seven
+           00F : 4C98;  -- 		OUT		UART
+           010 : 401E;  -- 		CALL	Wait1
+           011 : 4899;  -- 		IN		UART_CHK
+           012 : 201A;  -- 		JZERO	Fail
+           013 : 4C0A;  -- 		OUT		BEEP
+           014 : 401E;  -- 		CALL	WAIT1
+           015 : 4C0A;  -- 		OUT 	BEEP
+           016 : 401E;  -- 		CALL	WAIT1
+           017 : 4C0A;  -- 		OUT		BEEP
+           018 : 401E;  -- 		CALL	WAIT1
+           019 : 141D;  -- 		JUMP	end
+           01A : 4C0A;  -- fail:	OUT		BEEP
+           01B : 401E;  -- 		CALL	WAIT1
+           01C : 4C0A;  -- 		OUT		BEEP
+           01D : 141D;  -- end:	JUMP	end	
            01E : 4C02;  -- 	OUT     TIMER
            01F : 4802;  -- 	IN      TIMER
            020 : 4C01;  -- 	OUT     LEDS
