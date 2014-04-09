@@ -75,6 +75,47 @@ Wloop:
 	JNEG    Wloop
 	RETURN
 
+Getjobs:
+	LOAD	JobCount
+	;Put all the job requests into the UART FIFO
+	JobAskLoop:
+		OUT		UART
+		ADDI	1
+		STORE	JobCount
+		ADDI	-40
+		JNEG	JobAskLoop
+	
+	LOAD	Zero
+	STORE	Iterator
+	ADDI	Job0
+	STORE	JobCount
+	JobRetreiveLoop:
+		CALL	WaitForUART
+		IN		UART
+		ISTORE	JobCount
+		ADDI	2
+		STORE	JobCount
+		LOAD	Iterator
+		ADDI	1
+		STORE	Iterator
+		ADDI	-8
+		JNEG	JobRetreiveLoop
+		
+	RETURN
+		
+
+PickJob:
+	LOAD	Zero
+	STORE	Iterator	; reset iterator
+	
+	
+; Loops until the UART output FIFO is not empty
+WaitForUART:
+	IN UART_CHK
+	JZERO	Fail
+	RETURN
+	
+
 ; This subroutine will get the battery voltage,
 ; and stop program execution if it is too low.
 ; SetupI2C must be executed prior to this.
@@ -134,10 +175,17 @@ BlockI2C:
 	RETURN              ; Else return
 
 	
-; This is a good place to put variables
+; Variables
 Temp:     DW 0 ; "Temp" is not a great name, but can be helpful
+JobsCompleted: DW	0 ; Number of jobs that have  been completed
+JobCount: DW &H21 ; Variable used for getting jobs
+NextX_R:  DW &H0000 ; Target X Position in grid space
+NextX_A:  DW &H0000 ; Target X position in absolute location (measured/odometry)
+NextY_R:  DW &H0000 ; Target Y Position in grid space
+NextY_A:  DW &H0000 ; Target Y position in absolute location (measured/odometry)
+Iterator: DW &H0000 ; Used for loops as counter
 
-; Having some constants can be very useful
+; Constants
 Zero:     DW 0
 One:      DW 1
 Two:      DW 2
