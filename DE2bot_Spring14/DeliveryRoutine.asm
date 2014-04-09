@@ -76,58 +76,43 @@ Wloop:
 	RETURN
 
 Getjobs:
-	LOAD	JobCount ;
-	CALL	BaseComm ; Ask the base for a job based on Job Number
-	STORE	Job0	 ; Store the first job
-	LOAD	JobCount ;
-	ADD		1
+	LOAD	JobCount
+	;Put all the job requests into the UART FIFO
+	JobAskLoop:
+		OUT		UART
+		ADDI	1
+		STORE	JobCount
+		ADDI	-40
+		JNEG	JobAskLoop
+	
+	LOAD	Zero
+	STORE	Iterator
+	ADDI	Job0
 	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job1
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job2
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job3
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job4
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job5
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job6
-	LOAD	JobCount ;
-	ADD		1
-	STORE	JobCount
-	CALL	BaseComm
-	STORE	Job7
+	JobRetreiveLoop:
+		CALL	WaitForUART
+		IN		UART
+		ISTORE	JobCount
+		ADDI	2
+		STORE	JobCount
+		LOAD	Iterator
+		ADDI	1
+		STORE	Iterator
+		ADDI	-8
+		JNEG	JobRetreiveLoop
+		
 	RETURN
+		
 
 PickJob:
 	LOAD	Zero
 	STORE	Iterator	; reset iterator
 	
-		
-; This subroutine takes the value in the AC and outputs
-; it to the UART (sending to base station) then waits
-; for a response from the base and returns it in the AC
-BaseComm:
-	OUT UART
-	;Wait for UART
-	IN 	UART
+	
+; Loops until the UART output FIFO is not empty
+WaitForUART:
+	IN UART_CHK
+	JZERO	Fail
 	RETURN
 	
 
