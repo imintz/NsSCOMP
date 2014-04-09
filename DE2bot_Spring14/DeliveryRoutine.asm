@@ -43,24 +43,25 @@ Go2ft:
 	;OUT     RVELCMD
 	;JUMP    WaitForUser ; repeat
 	
-test:	LOAD	Seven
+test:	ILOAD	&HFF	
 		OUT		UART
+;		ILOAD	&H24	
+;		OUT		UART
 		CALL	Wait1
-		IN		UART_CHK
+here:   IN		UART_CHK
 		JZERO	Fail
-		OUT		BEEP
-		CALL	WAIT1
-		OUT 	BEEP
-		CALL	WAIT1
-		OUT		BEEP
-		CALL	WAIT1
-		JUMP	end
+		JUMP	succ		
 		
-fail:	OUT		BEEP
-		CALL	WAIT1
-		OUT		BEEP
+fail:	LOAD	Three
+		OUT		SSEG1
+		JUMP	fail
 				
-end:	JUMP	end	
+succ:	IN		UART
+		OUT		SSEG1
+		CALL	Wait1
+		CALL	Wait1
+		CALL	Wait1
+there:	JUMP	here
 
 	
 ;***** SUBROUTINES
@@ -135,7 +136,7 @@ BlockI2C:
 
 	
 ; This is a good place to put variables
-Temp:     DW 0 ; "Temp" is not a great name, but can be helpful
+Temp:     DW &H60 ; "Temp" is not a great name, but can be helpful
 
 ; Having some constants can be very useful
 Zero:     DW 0

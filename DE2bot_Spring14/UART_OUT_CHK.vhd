@@ -34,6 +34,7 @@ BEGIN
 		tridata  => IO_DATA
 	);
 	
-	chk_sig <= x"01" WHEN NEMPTY = '1' ELSE x"00";
+	chk_sig <= NEMPTY & NEMPTY & NEMPTY & NEMPTY & NEMPTY & NEMPTY & NEMPTY & NEMPTY;
+
 	
 END a;
