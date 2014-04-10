@@ -59,6 +59,13 @@ applicable agreement for further details.
 		(line (pt 0 120)(pt 16 120)(line_width 1))
 	)
 	(port
+		(pt 0 144)
+		(input)
+		(text "aclr" (rect 0 0 21 14)(font "Arial" (font_size 8)))
+		(text "aclr" (rect 20 138 37 151)(font "Arial" (font_size 8)))
+		(line (pt 0 144)(pt 16 144)(line_width 1))
+	)
+	(port
 		(pt 160 40)
 		(output)
 		(text "wrfull" (rect 0 0 33 14)(font "Arial" (font_size 8)))
@@ -80,6 +87,7 @@ applicable agreement for further details.
 		(line (pt 160 120)(pt 144 120)(line_width 1))
 	)
 	(drawing
+		(text "(ack)" (rect 51 99 72 111)(font "Arial" ))
 		(text "8 bits x 256 words" (rect 68 140 144 152)(font "Arial" ))
 		(line (pt 16 16)(pt 144 16)(line_width 1))
 		(line (pt 144 16)(pt 144 152)(line_width 1))

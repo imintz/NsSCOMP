@@ -40,8 +40,8 @@ applicable agreement for further details.
 	(port
 		(pt 208 32)
 		(bidir)
-		(text "IO_DATA[7..0]" (rect 0 0 71 12)(font "Arial" ))
-		(text "IO_DATA[7..0]" (rect 116 27 187 39)(font "Arial" ))
+		(text "IO_DATA[15..0]" (rect 0 0 77 12)(font "Arial" ))
+		(text "IO_DATA[15..0]" (rect 110 27 187 39)(font "Arial" ))
 		(line (pt 208 32)(pt 192 32)(line_width 3))
 	)
 	(drawing

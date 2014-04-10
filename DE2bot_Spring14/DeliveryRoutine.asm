@@ -43,21 +43,30 @@ Go2ft:
 	;OUT     RVELCMD
 	;JUMP    WaitForUser ; repeat
 	
-test:	ILOAD	&HFF	
+test:	LOAD	Zero	
 		OUT		UART
-;		ILOAD	&H24	
-;		OUT		UART
+		ADDI	&H10
+		;OUT		UART
+		ADDI	&H50
+		;OUT		UART
+		;ILOAD	&H24	
+		OUT		UART
 		CALL	Wait1
 here:   IN		UART_CHK
 		JZERO	Fail
 		JUMP	succ		
 		
 fail:	LOAD	Three
-		OUT		SSEG1
-		JUMP	fail
+		OUT		LCD
+		JUMP	here
 				
-succ:	IN		UART
-		OUT		SSEG1
+succ:	LOAD	Eight
+		OUT		LCD
+		CALL	Wait1
+		CALL	Wait1
+		CALL	Wait1
+		IN		UART
+		OUT		LCD
 		CALL	Wait1
 		CALL	Wait1
 		CALL	Wait1
@@ -69,7 +78,7 @@ there:	JUMP	here
 ; Subroutine to wait (block) for 1 second
 Wait1:
 	OUT     TIMER
-Wloop:
+Wloop: 
 	IN      TIMER
 	OUT     LEDS
 	ADDI    -10
