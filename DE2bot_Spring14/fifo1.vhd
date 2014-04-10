@@ -48,7 +48,7 @@ ENTITY fifo1 IS
 		wrclk		: IN STD_LOGIC ;
 		wrreq		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
-		rdempty		: OUT STD_LOGIC ;
+		wrempty		: OUT STD_LOGIC ;
 		wrfull		: OUT STD_LOGIC 
 	);
 END fifo1;
@@ -79,9 +79,9 @@ ARCHITECTURE SYN OF fifo1 IS
 	);
 	PORT (
 			wrclk	: IN STD_LOGIC ;
-			rdempty	: OUT STD_LOGIC ;
 			rdreq	: IN STD_LOGIC ;
 			wrfull	: OUT STD_LOGIC ;
+			wrempty	: OUT STD_LOGIC ;
 			rdclk	: IN STD_LOGIC ;
 			q	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 			wrreq	: IN STD_LOGIC ;
@@ -90,8 +90,8 @@ ARCHITECTURE SYN OF fifo1 IS
 	END COMPONENT;
 
 BEGIN
-	rdempty    <= sub_wire0;
-	wrfull    <= sub_wire1;
+	wrfull    <= sub_wire0;
+	wrempty    <= sub_wire1;
 	q    <= sub_wire2(7 DOWNTO 0);
 
 	dcfifo_component : dcfifo
@@ -115,8 +115,8 @@ BEGIN
 		rdclk => rdclk,
 		wrreq => wrreq,
 		data => data,
-		rdempty => sub_wire0,
-		wrfull => sub_wire1,
+		wrfull => sub_wire0,
+		wrempty => sub_wire1,
 		q => sub_wire2
 	);
 
@@ -151,12 +151,12 @@ END SYN;
 -- Retrieval info: PRIVATE: diff_widths NUMERIC "0"
 -- Retrieval info: PRIVATE: msb_usedw NUMERIC "0"
 -- Retrieval info: PRIVATE: output_width NUMERIC "8"
--- Retrieval info: PRIVATE: rsEmpty NUMERIC "1"
+-- Retrieval info: PRIVATE: rsEmpty NUMERIC "0"
 -- Retrieval info: PRIVATE: rsFull NUMERIC "0"
 -- Retrieval info: PRIVATE: rsUsedW NUMERIC "0"
 -- Retrieval info: PRIVATE: sc_aclr NUMERIC "0"
 -- Retrieval info: PRIVATE: sc_sclr NUMERIC "0"
--- Retrieval info: PRIVATE: wsEmpty NUMERIC "0"
+-- Retrieval info: PRIVATE: wsEmpty NUMERIC "1"
 -- Retrieval info: PRIVATE: wsFull NUMERIC "1"
 -- Retrieval info: PRIVATE: wsUsedW NUMERIC "0"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone II"
@@ -174,9 +174,9 @@ END SYN;
 -- Retrieval info: USED_PORT: data 0 0 8 0 INPUT NODEFVAL data[7..0]
 -- Retrieval info: USED_PORT: q 0 0 8 0 OUTPUT NODEFVAL q[7..0]
 -- Retrieval info: USED_PORT: rdclk 0 0 0 0 INPUT NODEFVAL rdclk
--- Retrieval info: USED_PORT: rdempty 0 0 0 0 OUTPUT NODEFVAL rdempty
 -- Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL rdreq
 -- Retrieval info: USED_PORT: wrclk 0 0 0 0 INPUT NODEFVAL wrclk
+-- Retrieval info: USED_PORT: wrempty 0 0 0 0 OUTPUT NODEFVAL wrempty
 -- Retrieval info: USED_PORT: wrfull 0 0 0 0 OUTPUT NODEFVAL wrfull
 -- Retrieval info: USED_PORT: wrreq 0 0 0 0 INPUT NODEFVAL wrreq
 -- Retrieval info: CONNECT: @data 0 0 8 0 data 0 0 8 0
@@ -185,8 +185,8 @@ END SYN;
 -- Retrieval info: CONNECT: @rdreq 0 0 0 0 rdreq 0 0 0 0
 -- Retrieval info: CONNECT: @rdclk 0 0 0 0 rdclk 0 0 0 0
 -- Retrieval info: CONNECT: @wrclk 0 0 0 0 wrclk 0 0 0 0
--- Retrieval info: CONNECT: rdempty 0 0 0 0 @rdempty 0 0 0 0
 -- Retrieval info: CONNECT: wrfull 0 0 0 0 @wrfull 0 0 0 0
+-- Retrieval info: CONNECT: wrempty 0 0 0 0 @wrempty 0 0 0 0
 -- Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 -- Retrieval info: GEN_FILE: TYPE_NORMAL fifo1.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL fifo1.inc FALSE

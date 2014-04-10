@@ -13,7 +13,7 @@
 --applicable agreement for further details.
 
 
-component fifo1
+component lpm_fifo0
 	PORT
 	(
 		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -22,7 +22,7 @@ component fifo1
 		wrclk		: IN STD_LOGIC ;
 		wrreq		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
-		wrempty		: OUT STD_LOGIC ;
+		rdempty		: OUT STD_LOGIC ;
 		wrfull		: OUT STD_LOGIC 
 	);
 end component;

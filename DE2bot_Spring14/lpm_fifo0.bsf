@@ -21,7 +21,7 @@ applicable agreement for further details.
 (header "symbol" (version "1.1"))
 (symbol
 	(rect 0 0 160 168)
-	(text "fifo0" (rect 69 1 96 17)(font "Arial" (font_size 10)))
+	(text "lpm_fifo0" (rect 55 1 115 17)(font "Arial" (font_size 10)))
 	(text "inst" (rect 8 152 25 164)(font "Arial" ))
 	(port
 		(pt 0 32)
@@ -66,22 +66,21 @@ applicable agreement for further details.
 		(line (pt 160 40)(pt 144 40)(line_width 1))
 	)
 	(port
-		(pt 160 56)
-		(output)
-		(text "wrempty" (rect 0 0 50 14)(font "Arial" (font_size 8)))
-		(text "wrempty" (rect 98 50 137 63)(font "Arial" (font_size 8)))
-		(line (pt 160 56)(pt 144 56)(line_width 1))
-	)
-	(port
 		(pt 160 96)
 		(output)
 		(text "q[7..0]" (rect 0 0 35 14)(font "Arial" (font_size 8)))
 		(text "q[7..0]" (rect 111 90 141 103)(font "Arial" (font_size 8)))
 		(line (pt 160 96)(pt 144 96)(line_width 3))
 	)
+	(port
+		(pt 160 120)
+		(output)
+		(text "rdempty" (rect 0 0 46 14)(font "Arial" (font_size 8)))
+		(text "rdempty" (rect 102 114 140 127)(font "Arial" (font_size 8)))
+		(line (pt 160 120)(pt 144 120)(line_width 1))
+	)
 	(drawing
-		(text "(ack)" (rect 51 99 72 111)(font "Arial" ))
-		(text "8 bits x 128 words" (rect 68 140 144 152)(font "Arial" ))
+		(text "8 bits x 256 words" (rect 68 140 144 152)(font "Arial" ))
 		(line (pt 16 16)(pt 144 16)(line_width 1))
 		(line (pt 144 16)(pt 144 152)(line_width 1))
 		(line (pt 144 152)(pt 16 152)(line_width 1))

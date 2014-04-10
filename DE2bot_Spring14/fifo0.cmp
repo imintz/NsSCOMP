@@ -22,6 +22,7 @@ component fifo0
 		wrclk		: IN STD_LOGIC ;
 		wrreq		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		wrempty		: OUT STD_LOGIC ;
 		wrfull		: OUT STD_LOGIC 
 	);
 end component;
