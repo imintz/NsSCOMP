@@ -49,7 +49,7 @@ ARCHITECTURE a OF SCOMP IS
 		EX_OUT,
 		EX_OUT2,
 		EX_SQRT,
-		EX_POW
+		EX_MULT
 	);
 
 	TYPE STACK_TYPE IS ARRAY (0 TO 7) OF STD_LOGIC_VECTOR(9 DOWNTO 0);
@@ -59,6 +59,8 @@ ARCHITECTURE a OF SCOMP IS
 	SIGNAL IO_IN        : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC_SHIFTED   : STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL AC_SQRT		: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL AC_MULT		: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL IR           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL MDR          : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL PC           : STD_LOGIC_VECTOR( 9 DOWNTO 0);
@@ -121,7 +123,32 @@ BEGIN
 		enabledt => IO_WRITE_INT,
 		tridata  => IO_DATA
 	);
-
+	
+	-- Megafunction to take sqrts
+	SQRT : ALTSQRT
+	GENERIC MAP (
+		pipeline => 0,
+		q_port_width => 16,
+		r_port_width => 16,
+		width => 16
+	)
+	PORT MAP (
+		radical => AC,
+		q => AC_SQRT
+	);
+	
+	-- Megafunction for multiplication
+	MULT : LPM_MULT
+	GENERIC MAP(
+		lpm_widtha	=> 16,
+		lpm_widthb 	=> 16,
+		lpm_widthp	=> 16
+	)
+	PORT MAP (
+		dataa		=> AC,
+		datab		=> MDR,
+		result		=> AC_MULT
+	);
 
 	IO_ADDR  <= IR(7 DOWNTO 0);
 
@@ -201,7 +228,7 @@ BEGIN
 						WHEN "010100" =>       -- SQRT
 							STATE <= EX_SQRT;
 						WHEN "010101" =>       -- POW
-							STATE <= EX_POW;
+							STATE <= EX_MULT;
 						
 						WHEN OTHERS =>
 							STATE <= FETCH;      -- Invalid opcodes default to NOP
@@ -306,26 +333,12 @@ BEGIN
 					STATE <= FETCH;
 					IO_WRITE_INT <= '0';
 					
-				WHEN EX_SQRT =>		--Dijkstra Square root
-					MASK <= x"4000";
-					REMAINDER <= AC;
-					FOR i IN 0 TO 7 LOOP
-						IF (REMAINDER > (ROOT+MASK)) THEN
-							REMAINDER <= REMAINDER - ROOT - MASK;
-							ROOT <= ROOT + MASK + MASK;
-						END IF;
-						MASK <= STD_LOGIC_VECTOR(UNSIGNED(SHIFT_RIGHT(UNSIGNED(MASK), 2)));
-						ROOT <= STD_LOGIC_VECTOR(UNSIGNED(SHIFT_RIGHT(UNSIGNED(ROOT), 1)));
-					END LOOP;
-					
-					IF (REMAINDER > ROOT) THEN
-						ROOT <= ROOT + 1;
-					END IF;
-					AC <= ROOT;
+				WHEN EX_SQRT =>
+					AC 	  <= AC_SQRT;
 					STATE <= FETCH;
 					
-				WHEN EX_POW =>
-					--AC	  <= STD_LOGIC_VECTOR(INTEGER(AC)**CONV_INTEGER(IR(9 downto 0)));
+				WHEN EX_MULT =>
+					AC	  <= AC_MULT;
 					STATE <= FETCH;
 
 				WHEN OTHERS =>
