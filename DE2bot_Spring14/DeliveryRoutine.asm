@@ -122,7 +122,7 @@ PickJob:
 ; Loops until the UART output FIFO is not empty
 WaitForUART:
 	IN UART_CHK
-	JZERO	Fail
+	JZERO	WaitForUART
 	RETURN
 	
 
