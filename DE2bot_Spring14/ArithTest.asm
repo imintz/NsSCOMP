@@ -32,6 +32,11 @@ Main: ; "Real" program starts here.
 	CALL	Wait1
 	CALL	Wait1
 	CALL	Wait1
+	LOAD	Three
+	OUT		LCD
+	CALL	Wait1
+	CALL	Wait1
+	CALL	Wait1
 	MULT	Two
 	OUT		LCD
 Here: JUMP Here
