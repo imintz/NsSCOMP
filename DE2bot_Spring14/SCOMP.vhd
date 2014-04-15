@@ -227,7 +227,7 @@ BEGIN
 							IO_WRITE_INT <= '1';
 						WHEN "010100" =>       -- SQRT
 							STATE <= EX_SQRT;
-						WHEN "010101" =>       -- POW
+						WHEN "010101" =>       -- Multiplication
 							STATE <= EX_MULT;
 						
 						WHEN OTHERS =>
