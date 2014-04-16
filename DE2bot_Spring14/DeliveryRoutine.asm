@@ -21,6 +21,7 @@ WaitForUser:
 	JPOS    WaitForUser ; one of those is not ready, so try again
 
 Main: ; "Real" program starts here.
+<<<<<<< HEAD
 	LOAD Zero
 	ADDI &H60
 	OUT  UART
@@ -73,6 +74,58 @@ Main: ; "Real" program starts here.
 	ADDI &H60
 	OUT UART
 HERE: JUMP HERE
+=======
+	OUT     RESETODO    ; reset odometry in case wheels moved after programming
+Go2ft:
+	;LOAD    FSlow       ; Very slow forward movement
+	;OUT     LVELCMD     ; commmand motors
+	;OUT     RVELCMD
+	; display velocity just as FYI
+	;IN      LVEL        ; read left velocity
+	;STORE   Temp        ; save it
+	;IN      RVEL        ; read right velocity
+	;ADD     Temp        ; add to left velocity
+	;SHIFT   -1          ; divide by 2 (average)
+	;OUT     SSEG1       ; display it
+	
+	;IN      XPOS        ; get current X position
+	;SUB     TwoFeet     ; check the distance
+	;JNEG    Go2ft       ; not there yet; keep checking
+	; at this point, we're past the desired distance
+	;LOAD    Zero
+	;OUT     LVELCMD     ; stop
+	;OUT     RVELCMD
+	;JUMP    WaitForUser ; repeat
+	
+test:	LOAD	Zero	
+		OUT		UART
+		ADDI	&H10
+		;OUT		UART
+		ADDI	&H50
+		;OUT		UART
+		;ILOAD	&H24	
+		OUT		UART
+		CALL	Wait1
+here:   IN		UART_CHK
+		JZERO	Fail
+		JUMP	succ		
+		
+fail:	LOAD	Three
+		OUT		LCD
+		JUMP	here
+				
+succ:	LOAD	Eight
+		OUT		LCD
+		CALL	Wait1
+		CALL	Wait1
+		CALL	Wait1
+		IN		UART
+		OUT		LCD
+		CALL	Wait1
+		CALL	Wait1
+		CALL	Wait1
+there:	JUMP	here
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
 
 	
 ;***** SUBROUTINES
@@ -87,6 +140,7 @@ Wloop:
 	JNEG    Wloop
 	RETURN
 
+<<<<<<< HEAD
 GetJobs:
 	LOAD	JobCount
 	
@@ -107,11 +161,27 @@ GetJobs:
 	LOAD	Zero
 	STORE	Iterator
 	ADDI	&H320
+=======
+Getjobs:
+	LOAD	JobCount
+	;Put all the job requests into the UART FIFO
+	JobAskLoop:
+		OUT		UART
+		ADDI	1
+		STORE	JobCount
+		ADDI	-40
+		JNEG	JobAskLoop
+	
+	LOAD	Zero
+	STORE	Iterator
+	ADDI	Job0
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
 	STORE	JobCount
 	JobRetreiveLoop:
 		CALL	WaitForUART
 		IN		UART
 		ISTORE	JobCount
+<<<<<<< HEAD
 		LOAD	JobCount
 		ADDI	1
 		STORE	JobCount
@@ -136,6 +206,10 @@ GetJobs:
 		STORE	JobCount
 		CALL	WaitForUART
 		IN		UART
+=======
+		ADDI	2
+		STORE	JobCount
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
 		LOAD	Iterator
 		ADDI	1
 		STORE	Iterator
@@ -153,7 +227,11 @@ PickJob:
 ; Loops until the UART output FIFO is not empty
 WaitForUART:
 	IN UART_CHK
+<<<<<<< HEAD
 	JZERO	WaitForUART
+=======
+	JZERO	Fail
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
 	RETURN
 	
 
@@ -261,6 +339,7 @@ MinBatt:  DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  DW &H1190     ; write one byte, read one byte, addr 0x90
 I2CRCmd:  DW &H0190     ; write nothing, read one byte, addr 0x90
 
+<<<<<<< HEAD
 		  ORG &H320
 Job0X1:	  DW &H0000
 Job0Y1:	  DW &H0000
@@ -294,6 +373,16 @@ Job7X1:	  DW &H0000
 Job7Y1:	  DW &H0000
 Job7X2:   DW &H0000
 Job7Y2:   DW &H0000
+=======
+Job0:	  DW &H0000
+Job1:	  DW &H0000
+Job2:	  DW &H0000
+Job3:	  DW &H0000
+Job4:	  DW &H0000
+Job5:	  DW &H0000
+Job6:	  DW &H0000
+Job7:	  DW &H0000
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
 
 
 ; IO address space map
@@ -332,6 +421,7 @@ XPOS:     EQU &HC0  ; Current X-position (read only)
 YPOS:     EQU &HC1  ; Y-position
 THETA:    EQU &HC2  ; Current rotational position of robot (0-701)
 RESETODO: EQU &HC3  ; reset odometry to 0
+<<<<<<< HEAD
 
 ;		  ORG &H3DF
 ;Job0X1:	  DW &H0000
@@ -366,3 +456,5 @@ RESETODO: EQU &HC3  ; reset odometry to 0
 ;Job7Y1:	  DW &H0000
 ;Job7X2:   DW &H0000
 ;Job7Y2:   DW &H0000
+=======
+>>>>>>> c676701c76c50d5c1153bbbf30fae923efb6d1c7
