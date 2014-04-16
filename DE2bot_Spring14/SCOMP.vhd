@@ -59,8 +59,8 @@ ARCHITECTURE a OF SCOMP IS
 	SIGNAL IO_IN        : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC_SHIFTED   : STD_LOGIC_VECTOR(15 DOWNTO 0);
-	SIGNAL AC_SQRT		: STD_LOGIC_VECTOR(15 DOWNTO 0);
-	SIGNAL AC_MULT		: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL AC_SQRT		: STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL AC_MULT		: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL IR           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL MDR          : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL PC           : STD_LOGIC_VECTOR( 9 DOWNTO 0);
@@ -72,6 +72,23 @@ ARCHITECTURE a OF SCOMP IS
 	SIGNAL ROOT			: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL REMAINDER	: STD_LOGIC_VECTOR(15 DOWNTO 0);
 
+	COMPONENT SQRT
+	PORT
+	(
+		radical		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		q			: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		remainder	: OUT STD_LOGIC_VECTOR (8 DOWNTO 0)
+	);
+	END COMPONENT;
+	
+	COMPONENT MULT
+	PORT
+	(
+		dataa		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		datab		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		result		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+	);
+	END COMPONENT;
 
 BEGIN
 	-- Use altsyncram component for unified program and data memory
@@ -124,31 +141,18 @@ BEGIN
 		tridata  => IO_DATA
 	);
 	
-	-- Megafunction to take sqrts
-	SQRT : ALTSQRT
-	GENERIC MAP (
-		pipeline => 0,
-		q_port_width => 16,
-		r_port_width => 16,
-		width => 16
-	)
-	PORT MAP (
-		radical => AC,
-		q => AC_SQRT
+	SCOMP_SQRT : SQRT PORT MAP (
+		radical	 => AC,
+		q	 => AC_SQRT
 	);
 	
 	-- Megafunction for multiplication
-	MULT : LPM_MULT
-	GENERIC MAP(
-		lpm_widtha	=> 16,
-		lpm_widthb 	=> 16,
-		lpm_widthp	=> 16
-	)
-	PORT MAP (
-		dataa		=> AC,
-		datab		=> MDR,
-		result		=> AC_MULT
+	SCOMP_MULT : MULT PORT MAP (
+		dataa	 => AC,
+		datab	 => MDR,
+		result	 => AC_MULT
 	);
+
 
 	IO_ADDR  <= IR(7 DOWNTO 0);
 
@@ -334,11 +338,11 @@ BEGIN
 					IO_WRITE_INT <= '0';
 					
 				WHEN EX_SQRT =>
-					AC 	  <= AC_SQRT;
+					AC 	  <= AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT;
 					STATE <= FETCH;
 					
 				WHEN EX_MULT =>
-					AC	  <= AC_MULT;
+					AC	  <= AC_MULT(15 DOWNTO 0);
 					STATE <= FETCH;
 
 				WHEN OTHERS =>
