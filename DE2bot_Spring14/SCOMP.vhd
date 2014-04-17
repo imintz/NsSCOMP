@@ -49,7 +49,7 @@ ARCHITECTURE a OF SCOMP IS
 		EX_OUT,
 		EX_OUT2,
 		EX_SQRT,
-		EX_POW
+		EX_MULT
 	);
 
 	TYPE STACK_TYPE IS ARRAY (0 TO 7) OF STD_LOGIC_VECTOR(9 DOWNTO 0);
@@ -59,6 +59,8 @@ ARCHITECTURE a OF SCOMP IS
 	SIGNAL IO_IN        : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC_SHIFTED   : STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL AC_SQRT		: STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL AC_MULT		: STD_LOGIC_VECTOR(31 DOWNTO 0);
 	SIGNAL IR           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL MDR          : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL PC           : STD_LOGIC_VECTOR( 9 DOWNTO 0);
@@ -70,6 +72,23 @@ ARCHITECTURE a OF SCOMP IS
 	SIGNAL ROOT			: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL REMAINDER	: STD_LOGIC_VECTOR(15 DOWNTO 0);
 
+	COMPONENT SQRT
+	PORT
+	(
+		radical		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		q			: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		remainder	: OUT STD_LOGIC_VECTOR (8 DOWNTO 0)
+	);
+	END COMPONENT;
+	
+	COMPONENT MULT
+	PORT
+	(
+		dataa		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		datab		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		result		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
+	);
+	END COMPONENT;
 
 BEGIN
 	-- Use altsyncram component for unified program and data memory
@@ -120,6 +139,18 @@ BEGIN
 		data     => AC,
 		enabledt => IO_WRITE_INT,
 		tridata  => IO_DATA
+	);
+	
+	SCOMP_SQRT : SQRT PORT MAP (
+		radical	 => AC,
+		q	 => AC_SQRT
+	);
+	
+	-- Megafunction for multiplication
+	SCOMP_MULT : MULT PORT MAP (
+		dataa	 => AC,
+		datab	 => MDR,
+		result	 => AC_MULT
 	);
 
 
@@ -200,8 +231,8 @@ BEGIN
 							IO_WRITE_INT <= '1';
 						WHEN "010100" =>       -- SQRT
 							STATE <= EX_SQRT;
-						WHEN "010101" =>       -- POW
-							STATE <= EX_POW;
+						WHEN "010101" =>       -- Multiplication
+							STATE <= EX_MULT;
 						
 						WHEN OTHERS =>
 							STATE <= FETCH;      -- Invalid opcodes default to NOP
@@ -306,26 +337,12 @@ BEGIN
 					STATE <= FETCH;
 					IO_WRITE_INT <= '0';
 					
-				WHEN EX_SQRT =>		--Dijkstra Square root
-					MASK <= x"4000";
-					REMAINDER <= AC;
-					FOR i IN 0 TO 7 LOOP
-						IF (REMAINDER > (ROOT+MASK)) THEN
-							REMAINDER <= REMAINDER - ROOT - MASK;
-							ROOT <= ROOT + MASK + MASK;
-						END IF;
-						MASK <= STD_LOGIC_VECTOR(UNSIGNED(SHIFT_RIGHT(UNSIGNED(MASK), 2)));
-						ROOT <= STD_LOGIC_VECTOR(UNSIGNED(SHIFT_RIGHT(UNSIGNED(ROOT), 1)));
-					END LOOP;
-					
-					IF (REMAINDER > ROOT) THEN
-						ROOT <= ROOT + 1;
-					END IF;
-					AC <= ROOT;
+				WHEN EX_SQRT =>
+					AC 	  <= AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT(7) & AC_SQRT;
 					STATE <= FETCH;
 					
-				WHEN EX_POW =>
-					--AC	  <= STD_LOGIC_VECTOR(INTEGER(AC)**CONV_INTEGER(IR(9 downto 0)));
+				WHEN EX_MULT =>
+					AC	  <= AC_MULT(15 DOWNTO 0);
 					STATE <= FETCH;
 
 				WHEN OTHERS =>

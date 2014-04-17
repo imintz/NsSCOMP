@@ -77,7 +77,7 @@ CONTENT
            040 : 0474;  -- 	LOAD	Zero
            041 : 0873;  -- 	STORE	Iterator	; reset iterator
            042 : 4899;  -- 	IN UART_CHK
-           043 : 2017;  -- 	JZERO	Fail
+           043 : 2042;  -- 	JZERO	WaitForUART
            044 : 4400;  -- 	RETURN
            045 : 4063;  -- 	CALL    GetBattLvl 
            046 : 1090;  -- 	SUB     MinBatt

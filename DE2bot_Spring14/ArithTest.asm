@@ -1,4 +1,4 @@
-; DeliveryRoutine.asm
+; ArithTest.asm
 ; Created by Idan Mintz
 
 	ORG     &H000		;Begin program at x000
@@ -21,58 +21,28 @@ WaitForUser:
 	JPOS    WaitForUser ; one of those is not ready, so try again
 
 Main: ; "Real" program starts here.
-	LOAD Zero
-	ADDI &H60
-	OUT  UART
-	CALL WaitForUART
-	IN	UART
-	CALL WaitForUART
-	IN UART
-	LOAD Zero
-	ADDI &H10
-	OUT UART
-	CALL WaitForUART
-	IN UART
-	CALL WaitForUART
-	IN UART
-	CALL GetJobs
-	
-	LOAD Job6X1
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job6Y1
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job6X2
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job6Y2
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job1X1
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job1Y1
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job1X2
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Job1Y2
-	OUT	LCD
-	CALL Wait1
-	
-	LOAD Zero
-	ADDI &H60
-	OUT UART
-HERE: JUMP HERE
+	LOAD	Zero
+	ADDI	256
+	OUT		LCD
+	CALL	Wait1
+	CALL	Wait1
+	CALL	Wait1
+	LOAD	Zero
+	ADDI	256
+	SQRT
+	OUT		LCD
+	CALL	Wait1
+	CALL	Wait1
+	CALL	Wait1
+	LOAD	Three
+	OUT		LCD
+	CALL	Wait1
+	CALL	Wait1
+	CALL	Wait1
+	LOAD	Three
+	MULT	Two
+	OUT		LCD
+Here: JUMP Here
 
 	
 ;***** SUBROUTINES
@@ -87,55 +57,26 @@ Wloop:
 	JNEG    Wloop
 	RETURN
 
-GetJobs:
+Getjobs:
 	LOAD	JobCount
-	
 	;Put all the job requests into the UART FIFO
 	JobAskLoop:
-		LOAD	JobCount
 		OUT		UART
 		ADDI	1
 		STORE	JobCount
-		CALL	WaitForUART
-		CALL	Wait1
-		LOAD	JobCount
 		ADDI	-40
-				
 		JNEG	JobAskLoop
-		JZERO	JobAskLoop
 	
 	LOAD	Zero
 	STORE	Iterator
-	ADDI	&H320
+	ADDI	Job0
 	STORE	JobCount
 	JobRetreiveLoop:
 		CALL	WaitForUART
 		IN		UART
 		ISTORE	JobCount
-		LOAD	JobCount
-		ADDI	1
+		ADDI	2
 		STORE	JobCount
-		
-		CALL	WaitForUART
-		IN		UART
-		ISTORE	JobCount
-		LOAD	JobCount
-		ADDI	1
-		STORE	JobCount
-		CALL	WaitForUART
-		IN		UART
-		ISTORE	JobCount
-		LOAD	JobCount
-		ADDI	1
-		STORE	JobCount
-		CALL	WaitForUART
-		IN		UART
-		ISTORE	JobCount
-		LOAD	JobCount
-		ADDI	1
-		STORE	JobCount
-		CALL	WaitForUART
-		IN		UART
 		LOAD	Iterator
 		ADDI	1
 		STORE	Iterator
@@ -261,41 +202,14 @@ MinBatt:  DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  DW &H1190     ; write one byte, read one byte, addr 0x90
 I2CRCmd:  DW &H0190     ; write nothing, read one byte, addr 0x90
 
-
-		  ORG &H320
-Job0X1:	  DW &H0000
-Job0Y1:	  DW &H0000
-Job0X2:   DW &H0000
-Job0Y2:   DW &H0000
-Job1X1:	  DW &H0000
-Job1Y1:	  DW &H0000
-Job1X2:   DW &H0000
-Job1Y2:   DW &H0000
-Job2X1:	  DW &H0000
-Job2Y1:	  DW &H0000
-Job2X2:   DW &H0000
-Job2Y2:   DW &H0000
-Job3X1:	  DW &H0000
-Job3Y1:	  DW &H0000
-Job3X2:   DW &H0000
-Job3Y2:   DW &H0000
-Job4X1:	  DW &H0000
-Job4Y1:	  DW &H0000
-Job4X2:   DW &H0000
-Job4Y2:   DW &H0000
-Job5X1:	  DW &H0000
-Job5Y1:	  DW &H0000
-Job5X2:   DW &H0000
-Job5Y2:   DW &H0000
-Job6X1:	  DW &H0000
-Job6Y1:	  DW &H0000
-Job6X2:   DW &H0000
-Job6Y2:   DW &H0000
-Job7X1:	  DW &H0000
-Job7Y1:	  DW &H0000
-Job7X2:   DW &H0000
-Job7Y2:   DW &H0000
-
+Job0:	  DW &H0000
+Job1:	  DW &H0000
+Job2:	  DW &H0000
+Job3:	  DW &H0000
+Job4:	  DW &H0000
+Job5:	  DW &H0000
+Job6:	  DW &H0000
+Job7:	  DW &H0000
 
 
 ; IO address space map
@@ -334,4 +248,3 @@ XPOS:     EQU &HC0  ; Current X-position (read only)
 YPOS:     EQU &HC1  ; Y-position
 THETA:    EQU &HC2  ; Current rotational position of robot (0-701)
 RESETODO: EQU &HC3  ; reset odometry to 0
-
