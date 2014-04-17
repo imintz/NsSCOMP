@@ -27,6 +27,8 @@ Main: ; "Real" program starts here.
 	CALL	Wait1
 	CALL	Wait1
 	CALL	Wait1
+	LOAD	Zero
+	ADDI	256
 	SQRT
 	OUT		LCD
 	CALL	Wait1
@@ -37,6 +39,7 @@ Main: ; "Real" program starts here.
 	CALL	Wait1
 	CALL	Wait1
 	CALL	Wait1
+	LOAD	Three
 	MULT	Two
 	OUT		LCD
 Here: JUMP Here
