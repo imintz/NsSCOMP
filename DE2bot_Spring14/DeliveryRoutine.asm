@@ -158,6 +158,34 @@ GetJobs:
 		JNEG	JobRetreiveLoop
 		
 	RETURN
+	
+GoToLongWall:
+		OUT		RESETODO
+		LOAD	Zero
+		ADDI	6		;creates mask 0000110 to enable sonars 2 and 3
+		OUT		SONAREN
+KeepTurning: ; Turn until the two sonar values are close enough 
+		LOAD	FSlow
+		OUT		LVELCMD
+		LOAD	RSlow
+		OUT		RVELCMD
+		IN		DIST2
+		STORE	Temp
+		IN		DIST3
+		SUB		TEMP	; Get difference of Sonar 2 and 3
+		JPOS	SkipABS
+		MULT	NegOne;
+SkipABS:
+		ADDI	-5
+		JPOS	KeepTurning
+		;Now go towards the wall
+GoToWall:
+		LOAD	FMed
+		OUT		RVELCMD
+		OUT		LVELCMD
+		IN		DIST2
+		ADDI	-5
+		JPOS	GoToWall
 		
 
 JobSelect:
@@ -326,6 +354,7 @@ Mag:	  DW 0
 Iterator: DW &H0000 ; Used for loops as counter
 
 ; Constants
+NegOne:   DW -1
 Zero:     DW 0
 One:      DW 1
 Two:      DW 2
