@@ -21,61 +21,19 @@ WaitForUser:
 	JPOS    WaitForUser ; one of those is not ready, so try again
 
 Main: ; "Real" program starts here.
-	OUT	RESETODO
-	LOAD One
-	STORE CurrX
-	STORE CurrY
-	LOAD Two
-	STORE NextX
-	STORE NextY
-	CALL TabLookUp
-	LOAD Mag
-	OUT LCD
-	CALL Wait3
-	LOAD Angle
-	OUT LCD
+	LOAD	One
+	STORE	CurrX
+	STORE	CurrY
+	LOAD	ClkIn
+	OUT		UART
+	CALL	WaitForUART
+	IN		UART
+	CALL	WaitForUART
+	IN		UART
+	CALL	GetJobs
+	CALL	JobSelect	
 	
-
-	;JUMP	GoFwd
-Turn:	LOAD FMed
-		OUT LVELCMD
-		LOAD RMed
-		OUT RVELCMD
-		IN	THETA
-		JZERO Turn
-		OUT	LCD
-		SUB Angle
-		JPOS Turn
-		
-		LOAD Zero
-		OUT LVELCMD
-		OUT RVELCMD
-		
-		OUT	RESETODO
-		LOAD Ten
-		OUT LVELCMD
-		OUT RVELCMD
-		CALL Wait1
-		
-		
-		
-GoFwd:	LOAD FMed
-		OUT RVELCMD
-		OUT LVELCMD
-		IN	XPOS
-		OUT SSEG1
-		SUB	Mag		
-		
-		JNEG GoFwd
-				
-		LOAD Zero
-		OUT LVELCMD
-		OUT RVELCMD
-		LOAD One
-		OUT BEEP
-		CALL Wait3
-		LOAD Zero
-		OUT BEEP	
+	
 	
 HERE: JUMP HERE
 
@@ -84,12 +42,14 @@ HERE: JUMP HERE
 
 ; Subroutine to wait (block) for 1 second
 Wait1:
+	STORE	WaitTemp
 	OUT     TIMER
 Wloop: 
 	IN      TIMER
 	OUT     LEDS
 	ADDI    -10
 	JNEG    Wloop
+	LOAD	WaitTemp
 	RETURN
 	
 Wait3:
@@ -121,30 +81,36 @@ GetJobs:
 	
 	LOAD	Zero
 	STORE	Iterator
-	ADDI	&H384
+	ADD		Jobs_Addr
 	STORE	JobCount
+
 	JobRetreiveLoop:
 		CALL	WaitForUART
 		IN		UART
+		AND		MaskL2
 		ISTORE	JobCount
 		LOAD	JobCount
 		ADDI	1
 		STORE	JobCount
 		
+		
 		CALL	WaitForUART
 		IN		UART
+		AND		MaskL2
 		ISTORE	JobCount
 		LOAD	JobCount
 		ADDI	1
 		STORE	JobCount
 		CALL	WaitForUART
 		IN		UART
+		AND		MaskL2
 		ISTORE	JobCount
 		LOAD	JobCount
 		ADDI	1
 		STORE	JobCount
 		CALL	WaitForUART
 		IN		UART
+		AND		MaskL2
 		ISTORE	JobCount
 		LOAD	JobCount
 		ADDI	1
@@ -197,12 +163,16 @@ JobSelect:
 	STORE	Temp
 SelectLoop:
 	ILOAD	Temp
-	STORE	TempX1
+	STORE	TempX1	
+	OUT		LCD
+	CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
 	ILOAD	Temp
 	STORE	TempY1
+	OUT		LCD
+	CALL	Wait3
 	LOAD	CurrX
 	SUB		TempX1
 	STORE	TempX2
@@ -216,11 +186,17 @@ SelectLoop:
 	ADD		TempY2
 	SQRT
 	STORE	TempX2
+	OUT		LCD
+	CALL	Wait3
 	
 	SUB		BestDist
+	OUT		LCD
+	CALL	Wait3
 	JPOS	SkipSet
 	LOAD	TempX2
 	STORE	BestDist
+	OUT		LCD
+	CALL	Wait3
 	LOAD	JobCount
 	Store	CurrJob
 SkipSet:
@@ -384,6 +360,7 @@ Mask4:    	DW &B00010000
 Mask5:    	DW &B00100000
 Mask6:  	DW &B01000000
 Mask7:	    DW &B10000000
+MaskL2:		DW &H0F
 StartMask: 	DW &B10100
 AllSonar: 	DW &B11111111
 OneMeter: 	DW 476        ; one meter in 2.1mm units
@@ -663,7 +640,7 @@ Tab5S25Ang:	DW 0
 Tab5S25Dst:	DW 0
 	  
 
-		  ORG &H384
+		  ORG 900
 Job1X1:	  DW &H0000
 Job1Y1:	  DW &H0000
 Job1X2:   DW &H0000
