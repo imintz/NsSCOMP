@@ -28,6 +28,13 @@ Main: ; "Real" program starts here.
 	LOAD Two
 	STORE NextX
 	STORE NextY ; NextY in AC so get deltaY first
+	CALL  GoToDest
+HERE: JUMP HERE
+	
+
+; Goes to the next X,Y
+GoToDest:
+	LOAD  NextY
 	SUB	  CurrY
 	STORE deltaY
 	LOAD  NextX
@@ -62,8 +69,8 @@ EndYLoop:
 	LOAD	Zero
 	OUT		BEEP
 
-	
-HERE: JUMP HERE
+	RETURN
+
 
 	
 ;***** SUBROUTINES
@@ -202,12 +209,16 @@ JobSelect:
 	STORE	Temp
 SelectLoop:
 	ILOAD	Temp
-	STORE	TempX1
+	STORE	TempX1	
+	OUT		LCD
+	CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
 	ILOAD	Temp
 	STORE	TempY1
+	OUT		LCD
+	CALL	Wait3
 	LOAD	CurrX
 	SUB		TempX1
 	STORE	TempX2
@@ -221,11 +232,17 @@ SelectLoop:
 	ADD		TempY2
 	SQRT
 	STORE	TempX2
+	OUT		LCD
+	CALL	Wait3
 	
 	SUB		BestDist
+	OUT		LCD
+	CALL	Wait3
 	JPOS	SkipSet
 	LOAD	TempX2
 	STORE	BestDist
+	OUT		LCD
+	CALL	Wait3
 	LOAD	JobCount
 	Store	CurrJob
 SkipSet:

@@ -10,303 +10,316 @@ CONTENT
   BEGIN
     [000..3FF] : 0000;  -- Default to NOP
 
-           000 : 04FB;  -- 	LOAD    Zero
+           000 : 0508;  -- 	LOAD    Zero
            001 : 4C83;  -- 	OUT     LVELCMD     ; Stop motors
            002 : 4C8B;  -- 	OUT     RVELCMD
-           003 : 40D7;  -- 	CALL    SetupI2C    ; Configure the I2C
-           004 : 40C0;  -- 	CALL    BattCheck   ; Get battery voltage (and end if too low).
+           003 : 40E4;  -- 	CALL    SetupI2C    ; Configure the I2C
+           004 : 40CD;  -- 	CALL    BattCheck   ; Get battery voltage (and end if too low).
            005 : 4C05;  -- 	OUT     SSEG2       ; Display batt voltage on SS
-           006 : 04FB;  -- 	LOAD    Zero
+           006 : 0508;  -- 	LOAD    Zero
            007 : 3417;  -- 	ADDI    &H17        ; arbitrary reminder to toggle SW17
            008 : 4C04;  -- 	OUT     SSEG1
            009 : 4803;  -- 	IN      XIO         ; contains KEYs and SAFETY
-           00A : 2516;  -- 	AND     StartMask   ; mask with 0x10100 : KEY3 and SAFETY
-           00B : 2D12;  -- 	XOR     Mask4       ; KEY3 is active low; invert SAFETY to match
+           00A : 2523;  -- 	AND     StartMask   ; mask with 0x10100 : KEY3 and SAFETY
+           00B : 2D1F;  -- 	XOR     Mask4       ; KEY3 is active low; invert SAFETY to match
            00C : 1C09;  -- 	JPOS    WaitForUser ; one of those is not ready, so try again
            00D : 4CC3;  -- 	OUT	RESETODO
-           00E : 04FC;  -- 	LOAD One
-           00F : 08F3;  -- 	STORE CurrX
-           010 : 08F4;  -- 	STORE CurrY
-           011 : 04FD;  -- 	LOAD Two
-           012 : 08F5;  -- 	STORE NextX
-           013 : 08F6;  -- 	STORE NextY ; NextY in AC so get deltaY first
-           014 : 10F4;  -- 	SUB	  CurrY
-           015 : 08F2;  -- 	STORE deltaY
-           016 : 04F5;  -- 	LOAD  NextX
-           017 : 10F3;  -- 	SUB	  CurrX
-           018 : 08F1;  -- 	STORE deltaX
-           019 : 04FB;  -- 	LOAD  Zero
-           01A : 08F9;  -- 	STORE Iterator
-           01B : 10F1;  -- 	SUB		deltaX
-           01C : 2022;  -- 	JZERO	EndXLoop
-           01D : 403E;  -- 	CALL	Go2Feet
-           01E : 04F9;  -- 	LOAD	Iterator
-           01F : 3401;  -- 	ADDI	1
-           020 : 08F9;  -- 	STORE 	Iterator
-           021 : 141B;  -- 	JUMP	xLoop
-           022 : 404B;  -- 	CALL	Turn90CW
-           023 : 04FB;  -- 	LOAD	Zero
-           024 : 08F9;  -- 	STORE	Iterator
-           025 : 10F2;  -- 	SUB		deltaY
-           026 : 202C;  -- 	JZERO	EndYLoop
-           027 : 403E;  -- 	CALL	Go2Feet
-           028 : 04F9;  -- 	LOAD	Iterator
-           029 : 3401;  -- 	ADDI	1
-           02A : 08F9;  -- 	STORE 	Iterator
-           02B : 1425;  -- 	JUMP	yLoop
-           02C : 04FC;  -- 	LOAD	One
-           02D : 4C0A;  -- 	OUT		BEEP
-           02E : 4038;  -- 	CALL	Wait3
-           02F : 04FB;  -- 	LOAD	Zero
+           00E : 0509;  -- 	LOAD One
+           00F : 0900;  -- 	STORE CurrX
+           010 : 0901;  -- 	STORE CurrY
+           011 : 050A;  -- 	LOAD Two
+           012 : 0902;  -- 	STORE NextX
+           013 : 0903;  -- 	STORE NextY ; NextY in AC so get deltaY first
+           014 : 4016;  -- 	CALL  GoToDest
+           015 : 1415;  -- HERE: JUMP HERE
+           016 : 0503;  -- 	LOAD  NextY
+           017 : 1101;  -- 	SUB	  CurrY
+           018 : 08FF;  -- 	STORE deltaY
+           019 : 0502;  -- 	LOAD  NextX
+           01A : 1100;  -- 	SUB	  CurrX
+           01B : 08FE;  -- 	STORE deltaX
+           01C : 0508;  -- 	LOAD  Zero
+           01D : 0906;  -- 	STORE Iterator
+           01E : 10FE;  -- 	SUB		deltaX
+           01F : 2025;  -- 	JZERO	EndXLoop
+           020 : 4041;  -- 	CALL	Go2Feet
+           021 : 0506;  -- 	LOAD	Iterator
+           022 : 3401;  -- 	ADDI	1
+           023 : 0906;  -- 	STORE 	Iterator
+           024 : 141E;  -- 	JUMP	xLoop
+           025 : 404E;  -- 	CALL	Turn90CW
+           026 : 0508;  -- 	LOAD	Zero
+           027 : 0906;  -- 	STORE	Iterator
+           028 : 10FF;  -- 	SUB		deltaY
+           029 : 202F;  -- 	JZERO	EndYLoop
+           02A : 4041;  -- 	CALL	Go2Feet
+           02B : 0506;  -- 	LOAD	Iterator
+           02C : 3401;  -- 	ADDI	1
+           02D : 0906;  -- 	STORE 	Iterator
+           02E : 1428;  -- 	JUMP	yLoop
+           02F : 0509;  -- 	LOAD	One
            030 : 4C0A;  -- 	OUT		BEEP
-           031 : 1431;  -- HERE: JUMP HERE
-           032 : 4C02;  -- 	OUT     TIMER
-           033 : 4802;  -- 	IN      TIMER
-           034 : 4C01;  -- 	OUT     LEDS
-           035 : 37F6;  -- 	ADDI    -10
-           036 : 1833;  -- 	JNEG    Wloop
-           037 : 4400;  -- 	RETURN
-           038 : 08E8;  -- 	STORE	WaitTemp
-           039 : 4032;  -- 	CALL	Wait1
-           03A : 4032;  -- 	CALL	Wait1
-           03B : 4032;  -- 	CALL	Wait1
-           03C : 04E8;  -- 	LOAD	WaitTemp
-           03D : 4400;  -- 	RETURN
-           03E : 4880;  -- 	IN		LPOS
-           03F : 08E9;  -- 	STORE	TempX1
-           040 : 050C;  -- 	LOAD	FMed
-           041 : 4C8B;  -- 	OUT		RVELCMD
-           042 : 4C83;  -- 	OUT		LVELCMD
-           043 : 4880;  -- 	IN		LPOS
-           044 : 10E9;  -- 	SUB		TempX1
-           045 : 111B;  -- 	SUB		TwoFeet2
-           046 : 1840;  -- 	JNEG	G2FLoop;
-           047 : 04FB;  -- 	LOAD	Zero
-           048 : 4C83;  -- 	OUT		LVELCMD
-           049 : 4C8B;  -- 	OUT		RVELCMD
-           04A : 4400;  -- 	RETURN
-           04B : 4CC3;  -- 	OUT		RESETODO
-           04C : 050C;  -- 	LOAD	FMed
-           04D : 4C83;  -- 	OUT		LVELCMD
-           04E : 050D;  -- 	LOAD	RMed
-           04F : 4C8B;  -- 	OUT		RVELCMD
-           050 : 48C2;  -- 	IN		THETA
-           051 : 204C;  -- 	JZERO	Turn90CWLoop
-           052 : 111C;  -- 	SUB		CW90
-           053 : 1C4C;  -- 	JPOS	Turn90CWLoop
-           054 : 04FB;  -- 	LOAD	Zero
-           055 : 4C83;  -- 	OUT		LVELCMD
-           056 : 4C8B;  -- 	OUT		RVELCMD
-           057 : 4400;  -- 	RETURN
-           058 : 4CC3;  -- 	OUT		RESETODO
-           059 : 050C;  -- 	LOAD	FMed
-           05A : 4C8B;  -- 	OUT		RVELCMD
-           05B : 050D;  -- 	LOAD	RMed
-           05C : 4C83;  -- 	OUT		LVELCMD
-           05D : 48C2;  -- 	IN		THETA
-           05E : 111D;  -- 	SUB		CCW90
-           05F : 1859;  -- 	JNEG	Turn90CCWLoop
-           060 : 04FB;  -- 	LOAD	Zero
-           061 : 4C83;  -- 	OUT		LVELCMD
-           062 : 4C8B;  -- 	OUT		RVELCMD
-           063 : 4400;  -- 	RETURN
-           064 : 0522;  -- 	LOAD	Rqst
-           065 : 08EE;  -- 	STORE	JobCount
-           066 : 04EE;  -- 		LOAD	JobCount
-           067 : 4C98;  -- 		OUT		UART
-           068 : 3401;  -- 		ADDI	1
-           069 : 08EE;  -- 		STORE	JobCount
-           06A : 40BD;  -- 		CALL	WaitForUART
-           06B : 4032;  -- 		CALL	Wait1
-           06C : 04EE;  -- 		LOAD	JobCount
-           06D : 37D8;  -- 		ADDI	-40
-           06E : 1866;  -- 		JNEG	JobAskLoop
-           06F : 2066;  -- 		JZERO	JobAskLoop
-           070 : 04FB;  -- 	LOAD	Zero
-           071 : 08F9;  -- 	STORE	Iterator
-           072 : 3784;  -- 	ADDI	&H384
-           073 : 08EE;  -- 	STORE	JobCount
-           074 : 40BD;  -- 		CALL	WaitForUART
-           075 : 4898;  -- 		IN		UART
-           076 : 3CEE;  -- 		ISTORE	JobCount
-           077 : 04EE;  -- 		LOAD	JobCount
-           078 : 3401;  -- 		ADDI	1
-           079 : 08EE;  -- 		STORE	JobCount
-           07A : 40BD;  -- 		CALL	WaitForUART
-           07B : 4898;  -- 		IN		UART
-           07C : 3CEE;  -- 		ISTORE	JobCount
-           07D : 04EE;  -- 		LOAD	JobCount
-           07E : 3401;  -- 		ADDI	1
-           07F : 08EE;  -- 		STORE	JobCount
-           080 : 40BD;  -- 		CALL	WaitForUART
-           081 : 4898;  -- 		IN		UART
-           082 : 3CEE;  -- 		ISTORE	JobCount
-           083 : 04EE;  -- 		LOAD	JobCount
-           084 : 3401;  -- 		ADDI	1
-           085 : 08EE;  -- 		STORE	JobCount
-           086 : 40BD;  -- 		CALL	WaitForUART
-           087 : 4898;  -- 		IN		UART
-           088 : 3CEE;  -- 		ISTORE	JobCount
-           089 : 04EE;  -- 		LOAD	JobCount
-           08A : 3401;  -- 		ADDI	1
-           08B : 08EE;  -- 		STORE	JobCount
-           08C : 40BD;  -- 		CALL	WaitForUART
-           08D : 4898;  -- 		IN		UART
-           08E : 04F9;  -- 		LOAD	Iterator
-           08F : 3401;  -- 		ADDI	1
-           090 : 08F9;  -- 		STORE	Iterator
-           091 : 37F8;  -- 		ADDI	-8
-           092 : 1874;  -- 		JNEG	JobRetreiveLoop
-           093 : 4400;  -- 	RETURN
-           094 : 04FC;  -- 	LOAD	One
-           095 : 08EE;  -- 	STORE	JobCount
-           096 : 0D07;  -- 	ADD		TwoK
-           097 : 08F0;  -- 	STORE	BestDist
-           098 : 0528;  -- 	LOAD	Jobs_Addr
-           099 : 08E7;  -- 	STORE	Temp
-           09A : 38E7;  -- 	ILOAD	Temp
-           09B : 08E9;  -- 	STORE	TempX1
-           09C : 04E7;  -- 	LOAD	Temp
-           09D : 3401;  -- 	ADDI	1
-           09E : 08E7;  -- 	STORE	Temp
-           09F : 38E7;  -- 	ILOAD	Temp
-           0A0 : 08EA;  -- 	STORE	TempY1
-           0A1 : 04F3;  -- 	LOAD	CurrX
-           0A2 : 10E9;  -- 	SUB		TempX1
-           0A3 : 08EB;  -- 	STORE	TempX2
-           0A4 : 04F4;  -- 	LOAD	CurrY
-           0A5 : 10EA;  -- 	SUB		TempY1
-           0A6 : 08EC;  -- 	STORE	TempY2
-           0A7 : 54EC;  -- 	MULT	TempY2
-           0A8 : 08EC;  -- 	STORE	TempY2
-           0A9 : 04EB;  -- 	LOAD	TempX2
-           0AA : 54EB;  -- 	MULT	TempX2
-           0AB : 0CEC;  -- 	ADD		TempY2
-           0AC : 5000;  -- 	SQRT
-           0AD : 08EB;  -- 	STORE	TempX2
-           0AE : 10F0;  -- 	SUB		BestDist
-           0AF : 1CB4;  -- 	JPOS	SkipSet
-           0B0 : 04EB;  -- 	LOAD	TempX2
-           0B1 : 08F0;  -- 	STORE	BestDist
-           0B2 : 04EE;  -- 	LOAD	JobCount
-           0B3 : 08EF;  -- 	Store	CurrJob
-           0B4 : 04E7;  -- 	LOAD	Temp
-           0B5 : 3403;  -- 	ADDI	3
-           0B6 : 08E7;  -- 	STORE	Temp
-           0B7 : 04EE;  -- 	LOAD	JobCount
-           0B8 : 3401;  -- 	ADDI	1
-           0B9 : 08EE;  -- 	STORE	JobCount
-           0BA : 37F7;  -- 	ADDI	-9
-           0BB : 189A;  -- 	JNEG	SelectLoop
-           0BC : 4400;  -- 	RETURN
-           0BD : 4899;  -- 	IN UART_CHK
-           0BE : 20BD;  -- 	JZERO	WaitForUART
-           0BF : 4400;  -- 	RETURN
-           0C0 : 40DE;  -- 	CALL    GetBattLvl 
-           0C1 : 111E;  -- 	SUB     MinBatt
-           0C2 : 18C5;  -- 	JNEG    DeadBatt
-           0C3 : 0D1E;  -- 	ADD     MinBatt     ; get original value back
-           0C4 : 4400;  -- 	RETURN
-           0C5 : 04FF;  -- 	LOAD    Four
-           0C6 : 4C0A;  -- 	OUT     BEEP        ; start beep sound
-           0C7 : 40DE;  -- 	CALL    GetBattLvl  ; get the battery level
-           0C8 : 4C04;  -- 	OUT     SSEG1       ; display it everywhere
-           0C9 : 4C05;  -- 	OUT     SSEG2
-           0CA : 4C06;  -- 	OUT     LCD
-           0CB : 04FB;  -- 	LOAD    Zero
-           0CC : 37FF;  -- 	ADDI    -1          ; 0xFFFF
-           0CD : 4C01;  -- 	OUT     LEDS        ; all LEDs on
-           0CE : 4C07;  -- 	OUT     GLEDS
-           0CF : 4032;  -- 	CALL    Wait1       ; 1 second
-           0D0 : 04FB;  -- 	Load    Zero
-           0D1 : 4C0A;  -- 	OUT     BEEP        ; stop beeping
-           0D2 : 04FB;  -- 	LOAD    Zero
-           0D3 : 4C01;  -- 	OUT     LEDS        ; LEDs off
-           0D4 : 4C07;  -- 	OUT     GLEDS
-           0D5 : 4032;  -- 	CALL    Wait1       ; 1 second
-           0D6 : 14C5;  -- 	JUMP    DeadBatt    ; repeat forever
-           0D7 : 051F;  -- 	LOAD    I2CWCmd     ; 0x1190 (write 1B, read 1B, addr 0x90)
-           0D8 : 4C90;  -- 	OUT     I2C_CMD     ; to I2C_CMD register
-           0D9 : 04FB;  -- 	LOAD    Zero        ; 0x0000 (A/D port 0, no increment)
-           0DA : 4C91;  -- 	OUT     I2C_DATA    ; to I2C_DATA register
-           0DB : 4C92;  -- 	OUT     I2C_RDY     ; start the communication
-           0DC : 40E4;  -- 	CALL    BlockI2C    ; wait for it to finish
-           0DD : 4400;  -- 	RETURN
-           0DE : 0520;  -- 	LOAD    I2CRCmd     ; 0x0190 (write 0B, read 1B, addr 0x90)
-           0DF : 4C90;  -- 	OUT     I2C_CMD     ; to I2C_CMD
-           0E0 : 4C92;  -- 	OUT     I2C_RDY     ; start the communication
-           0E1 : 40E4;  -- 	CALL    BlockI2C    ; wait for it to finish
-           0E2 : 4891;  -- 	IN      I2C_DATA    ; get the returned data
-           0E3 : 4400;  -- 	RETURN
-           0E4 : 4892;  -- 	IN      I2C_RDY;   ; Read busy signal
-           0E5 : 1CE4;  -- 	JPOS    BlockI2C    ; If not 0, try again
-           0E6 : 4400;  -- 	RETURN              ; Else return
-           0E7 : 0000;  -- Temp:     DW 0 ; "Temp" is not a great name, but can be helpful
-           0E8 : 0000;  -- WaitTemp: DW 0
-           0E9 : 0000;  -- TempX1:	  DW 0
-           0EA : 0000;  -- TempY1:	  DW 0
-           0EB : 0000;  -- TempX2:	  DW 0
-           0EC : 0000;  -- TempY2:	  DW 0
-           0ED : 0000;  -- JobsComp: DW 0 ; Number of jobs that have  been completed
-           0EE : 0021;  -- JobCount: DW &H21 ; Variable used for getting jobs
-           0EF : 0000;  -- CurrJob:  DW 0
-           0F0 : 0000;  -- BestDist: DW 0
-           0F1 : 0000;  -- deltaX:	  DW 0
-           0F2 : 0000;  -- deltaY:	  DW 0
-           0F3 : 0000;  -- CurrX:	  DW &H00
-           0F4 : 0000;  -- CurrY:	  DW &H00
-           0F5 : 0000;  -- NextX:    DW &H0000 ; Target X Position in grid space
-           0F6 : 0000;  -- NextY:    DW &H0000 ; Target Y Position in grid space
-           0F7 : 0000;  -- Angle:	  DW 0
-           0F8 : 0000;  -- Mag:	  DW 0
-           0F9 : 0000;  -- Iterator: DW &H0000 ; Used for loops as counter
-           0FA : FFFF;  -- NegOne:   DW -1
-           0FB : 0000;  -- Zero:     DW 0
-           0FC : 0001;  -- One:      DW 1
-           0FD : 0002;  -- Two:      DW 2
-           0FE : 0003;  -- Three:    DW 3
-           0FF : 0004;  -- Four:     DW 4
-           100 : 0005;  -- Five:     DW 5
-           101 : 0006;  -- Six:      DW 6
-           102 : 0007;  -- Seven:    DW 7
-           103 : 0008;  -- Eight:    DW 8
-           104 : 0009;  -- Nine:     DW 9
-           105 : 000A;  -- Ten:      DW 10
-           106 : 0032;  -- Fifty:	  DW 50
-           107 : 07D0;  -- TwoK:	  DW 2000
-           108 : 0064;  -- FSlow:    DW 100       ; 100 is about the lowest value that will move at all
-           109 : FF9C;  -- RSlow:    DW -100
-           10A : 01F4;  -- FFast:    DW 500       ; 500 is a fair clip (511 is max)
-           10B : FE0C;  -- RFast:    DW -500
-           10C : 012C;  -- FMed:	  DW 300
-           10D : FED4;  -- RMed:	  DW -300
-           10E : 0001;  -- Mask0:    	DW &B00000001
-           10F : 0002;  -- Mask1:    	DW &B00000010
-           110 : 0004;  -- Mask2:    	DW &B00000100
-           111 : 0008;  -- Mask3:    	DW &B00001000
-           112 : 0010;  -- Mask4:    	DW &B00010000
-           113 : 0020;  -- Mask5:    	DW &B00100000
-           114 : 0040;  -- Mask6:  	DW &B01000000
-           115 : 0080;  -- Mask7:	    DW &B10000000
-           116 : 0014;  -- StartMask: 	DW &B10100
-           117 : 00FF;  -- AllSonar: 	DW &B11111111
-           118 : 01DC;  -- OneMeter: 	DW 476        ; one meter in 2.1mm units
-           119 : 00EE;  -- HalfMeter: 	DW 238        ; half meter in 2.1mm units
-           11A : 0122;  -- TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
-           11B : 0245;  -- TwoFeet2:	DW 581		  ; ~2ft in 1.05mm units
-           11C : 020E;  -- CW90:		DW 526		  ; Clockwise 90 degrees, ie. 270 degrees
-           11D : 00AF;  -- CCW90:		DW 175		  ; Counter clockwise 90 degrees
-           11E : 006E;  -- MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
-           11F : 1190;  -- I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90
-           120 : 0190;  -- I2CRCmd:  	DW &H0190     ; write nothing, read one byte, addr 0x90
-           121 : 0010;  -- ClkIn: 	  	DW &H10
-           122 : 0021;  -- Rqst:		DW &H21
-           123 : 0030;  -- PkUp:		DW &H30
-           124 : 0040;  -- DrpOff:		DW &H40
-           125 : 0050;  -- TmLft:		DW &H50
-           126 : 0060;  -- ClkOut:		DW &H60
-           127 : 0090;  -- Done:		DW &H90
-           128 : 0384;  -- Jobs_Addr:	DW 900
+           031 : 403B;  -- 	CALL	Wait3
+           032 : 0508;  -- 	LOAD	Zero
+           033 : 4C0A;  -- 	OUT		BEEP
+           034 : 4400;  -- 	RETURN
+           035 : 4C02;  -- 	OUT     TIMER
+           036 : 4802;  -- 	IN      TIMER
+           037 : 4C01;  -- 	OUT     LEDS
+           038 : 37F6;  -- 	ADDI    -10
+           039 : 1836;  -- 	JNEG    Wloop
+           03A : 4400;  -- 	RETURN
+           03B : 08F5;  -- 	STORE	WaitTemp
+           03C : 4035;  -- 	CALL	Wait1
+           03D : 4035;  -- 	CALL	Wait1
+           03E : 4035;  -- 	CALL	Wait1
+           03F : 04F5;  -- 	LOAD	WaitTemp
+           040 : 4400;  -- 	RETURN
+           041 : 4880;  -- 	IN		LPOS
+           042 : 08F6;  -- 	STORE	TempX1
+           043 : 0519;  -- 	LOAD	FMed
+           044 : 4C8B;  -- 	OUT		RVELCMD
+           045 : 4C83;  -- 	OUT		LVELCMD
+           046 : 4880;  -- 	IN		LPOS
+           047 : 10F6;  -- 	SUB		TempX1
+           048 : 1128;  -- 	SUB		TwoFeet2
+           049 : 1843;  -- 	JNEG	G2FLoop;
+           04A : 0508;  -- 	LOAD	Zero
+           04B : 4C83;  -- 	OUT		LVELCMD
+           04C : 4C8B;  -- 	OUT		RVELCMD
+           04D : 4400;  -- 	RETURN
+           04E : 4CC3;  -- 	OUT		RESETODO
+           04F : 0519;  -- 	LOAD	FMed
+           050 : 4C83;  -- 	OUT		LVELCMD
+           051 : 051A;  -- 	LOAD	RMed
+           052 : 4C8B;  -- 	OUT		RVELCMD
+           053 : 48C2;  -- 	IN		THETA
+           054 : 204F;  -- 	JZERO	Turn90CWLoop
+           055 : 1129;  -- 	SUB		CW90
+           056 : 1C4F;  -- 	JPOS	Turn90CWLoop
+           057 : 0508;  -- 	LOAD	Zero
+           058 : 4C83;  -- 	OUT		LVELCMD
+           059 : 4C8B;  -- 	OUT		RVELCMD
+           05A : 4400;  -- 	RETURN
+           05B : 4CC3;  -- 	OUT		RESETODO
+           05C : 0519;  -- 	LOAD	FMed
+           05D : 4C8B;  -- 	OUT		RVELCMD
+           05E : 051A;  -- 	LOAD	RMed
+           05F : 4C83;  -- 	OUT		LVELCMD
+           060 : 48C2;  -- 	IN		THETA
+           061 : 112A;  -- 	SUB		CCW90
+           062 : 185C;  -- 	JNEG	Turn90CCWLoop
+           063 : 0508;  -- 	LOAD	Zero
+           064 : 4C83;  -- 	OUT		LVELCMD
+           065 : 4C8B;  -- 	OUT		RVELCMD
+           066 : 4400;  -- 	RETURN
+           067 : 052F;  -- 	LOAD	Rqst
+           068 : 08FB;  -- 	STORE	JobCount
+           069 : 04FB;  -- 		LOAD	JobCount
+           06A : 4C98;  -- 		OUT		UART
+           06B : 3401;  -- 		ADDI	1
+           06C : 08FB;  -- 		STORE	JobCount
+           06D : 40CA;  -- 		CALL	WaitForUART
+           06E : 4035;  -- 		CALL	Wait1
+           06F : 04FB;  -- 		LOAD	JobCount
+           070 : 37D8;  -- 		ADDI	-40
+           071 : 1869;  -- 		JNEG	JobAskLoop
+           072 : 2069;  -- 		JZERO	JobAskLoop
+           073 : 0508;  -- 	LOAD	Zero
+           074 : 0906;  -- 	STORE	Iterator
+           075 : 3784;  -- 	ADDI	&H384
+           076 : 08FB;  -- 	STORE	JobCount
+           077 : 40CA;  -- 		CALL	WaitForUART
+           078 : 4898;  -- 		IN		UART
+           079 : 3CFB;  -- 		ISTORE	JobCount
+           07A : 04FB;  -- 		LOAD	JobCount
+           07B : 3401;  -- 		ADDI	1
+           07C : 08FB;  -- 		STORE	JobCount
+           07D : 40CA;  -- 		CALL	WaitForUART
+           07E : 4898;  -- 		IN		UART
+           07F : 3CFB;  -- 		ISTORE	JobCount
+           080 : 04FB;  -- 		LOAD	JobCount
+           081 : 3401;  -- 		ADDI	1
+           082 : 08FB;  -- 		STORE	JobCount
+           083 : 40CA;  -- 		CALL	WaitForUART
+           084 : 4898;  -- 		IN		UART
+           085 : 3CFB;  -- 		ISTORE	JobCount
+           086 : 04FB;  -- 		LOAD	JobCount
+           087 : 3401;  -- 		ADDI	1
+           088 : 08FB;  -- 		STORE	JobCount
+           089 : 40CA;  -- 		CALL	WaitForUART
+           08A : 4898;  -- 		IN		UART
+           08B : 3CFB;  -- 		ISTORE	JobCount
+           08C : 04FB;  -- 		LOAD	JobCount
+           08D : 3401;  -- 		ADDI	1
+           08E : 08FB;  -- 		STORE	JobCount
+           08F : 40CA;  -- 		CALL	WaitForUART
+           090 : 4898;  -- 		IN		UART
+           091 : 0506;  -- 		LOAD	Iterator
+           092 : 3401;  -- 		ADDI	1
+           093 : 0906;  -- 		STORE	Iterator
+           094 : 37F8;  -- 		ADDI	-8
+           095 : 1877;  -- 		JNEG	JobRetreiveLoop
+           096 : 4400;  -- 	RETURN
+           097 : 0509;  -- 	LOAD	One
+           098 : 08FB;  -- 	STORE	JobCount
+           099 : 0D14;  -- 	ADD		TwoK
+           09A : 08FD;  -- 	STORE	BestDist
+           09B : 0535;  -- 	LOAD	Jobs_Addr
+           09C : 08F4;  -- 	STORE	Temp
+           09D : 38F4;  -- 	ILOAD	Temp
+           09E : 08F6;  -- 	STORE	TempX1	
+           09F : 4C06;  -- 	OUT		LCD
+           0A0 : 403B;  -- 	CALL	Wait3
+           0A1 : 04F4;  -- 	LOAD	Temp
+           0A2 : 3401;  -- 	ADDI	1
+           0A3 : 08F4;  -- 	STORE	Temp
+           0A4 : 38F4;  -- 	ILOAD	Temp
+           0A5 : 08F7;  -- 	STORE	TempY1
+           0A6 : 4C06;  -- 	OUT		LCD
+           0A7 : 403B;  -- 	CALL	Wait3
+           0A8 : 0500;  -- 	LOAD	CurrX
+           0A9 : 10F6;  -- 	SUB		TempX1
+           0AA : 08F8;  -- 	STORE	TempX2
+           0AB : 0501;  -- 	LOAD	CurrY
+           0AC : 10F7;  -- 	SUB		TempY1
+           0AD : 08F9;  -- 	STORE	TempY2
+           0AE : 54F9;  -- 	MULT	TempY2
+           0AF : 08F9;  -- 	STORE	TempY2
+           0B0 : 04F8;  -- 	LOAD	TempX2
+           0B1 : 54F8;  -- 	MULT	TempX2
+           0B2 : 0CF9;  -- 	ADD		TempY2
+           0B3 : 5000;  -- 	SQRT
+           0B4 : 08F8;  -- 	STORE	TempX2
+           0B5 : 4C06;  -- 	OUT		LCD
+           0B6 : 403B;  -- 	CALL	Wait3
+           0B7 : 10FD;  -- 	SUB		BestDist
+           0B8 : 4C06;  -- 	OUT		LCD
+           0B9 : 403B;  -- 	CALL	Wait3
+           0BA : 1CC1;  -- 	JPOS	SkipSet
+           0BB : 04F8;  -- 	LOAD	TempX2
+           0BC : 08FD;  -- 	STORE	BestDist
+           0BD : 4C06;  -- 	OUT		LCD
+           0BE : 403B;  -- 	CALL	Wait3
+           0BF : 04FB;  -- 	LOAD	JobCount
+           0C0 : 08FC;  -- 	Store	CurrJob
+           0C1 : 04F4;  -- 	LOAD	Temp
+           0C2 : 3403;  -- 	ADDI	3
+           0C3 : 08F4;  -- 	STORE	Temp
+           0C4 : 04FB;  -- 	LOAD	JobCount
+           0C5 : 3401;  -- 	ADDI	1
+           0C6 : 08FB;  -- 	STORE	JobCount
+           0C7 : 37F7;  -- 	ADDI	-9
+           0C8 : 189D;  -- 	JNEG	SelectLoop
+           0C9 : 4400;  -- 	RETURN
+           0CA : 4899;  -- 	IN UART_CHK
+           0CB : 20CA;  -- 	JZERO	WaitForUART
+           0CC : 4400;  -- 	RETURN
+           0CD : 40EB;  -- 	CALL    GetBattLvl 
+           0CE : 112B;  -- 	SUB     MinBatt
+           0CF : 18D2;  -- 	JNEG    DeadBatt
+           0D0 : 0D2B;  -- 	ADD     MinBatt     ; get original value back
+           0D1 : 4400;  -- 	RETURN
+           0D2 : 050C;  -- 	LOAD    Four
+           0D3 : 4C0A;  -- 	OUT     BEEP        ; start beep sound
+           0D4 : 40EB;  -- 	CALL    GetBattLvl  ; get the battery level
+           0D5 : 4C04;  -- 	OUT     SSEG1       ; display it everywhere
+           0D6 : 4C05;  -- 	OUT     SSEG2
+           0D7 : 4C06;  -- 	OUT     LCD
+           0D8 : 0508;  -- 	LOAD    Zero
+           0D9 : 37FF;  -- 	ADDI    -1          ; 0xFFFF
+           0DA : 4C01;  -- 	OUT     LEDS        ; all LEDs on
+           0DB : 4C07;  -- 	OUT     GLEDS
+           0DC : 4035;  -- 	CALL    Wait1       ; 1 second
+           0DD : 0508;  -- 	Load    Zero
+           0DE : 4C0A;  -- 	OUT     BEEP        ; stop beeping
+           0DF : 0508;  -- 	LOAD    Zero
+           0E0 : 4C01;  -- 	OUT     LEDS        ; LEDs off
+           0E1 : 4C07;  -- 	OUT     GLEDS
+           0E2 : 4035;  -- 	CALL    Wait1       ; 1 second
+           0E3 : 14D2;  -- 	JUMP    DeadBatt    ; repeat forever
+           0E4 : 052C;  -- 	LOAD    I2CWCmd     ; 0x1190 (write 1B, read 1B, addr 0x90)
+           0E5 : 4C90;  -- 	OUT     I2C_CMD     ; to I2C_CMD register
+           0E6 : 0508;  -- 	LOAD    Zero        ; 0x0000 (A/D port 0, no increment)
+           0E7 : 4C91;  -- 	OUT     I2C_DATA    ; to I2C_DATA register
+           0E8 : 4C92;  -- 	OUT     I2C_RDY     ; start the communication
+           0E9 : 40F1;  -- 	CALL    BlockI2C    ; wait for it to finish
+           0EA : 4400;  -- 	RETURN
+           0EB : 052D;  -- 	LOAD    I2CRCmd     ; 0x0190 (write 0B, read 1B, addr 0x90)
+           0EC : 4C90;  -- 	OUT     I2C_CMD     ; to I2C_CMD
+           0ED : 4C92;  -- 	OUT     I2C_RDY     ; start the communication
+           0EE : 40F1;  -- 	CALL    BlockI2C    ; wait for it to finish
+           0EF : 4891;  -- 	IN      I2C_DATA    ; get the returned data
+           0F0 : 4400;  -- 	RETURN
+           0F1 : 4892;  -- 	IN      I2C_RDY;   ; Read busy signal
+           0F2 : 1CF1;  -- 	JPOS    BlockI2C    ; If not 0, try again
+           0F3 : 4400;  -- 	RETURN              ; Else return
+           0F4 : 0000;  -- Temp:     DW 0 ; "Temp" is not a great name, but can be helpful
+           0F5 : 0000;  -- WaitTemp: DW 0
+           0F6 : 0000;  -- TempX1:	  DW 0
+           0F7 : 0000;  -- TempY1:	  DW 0
+           0F8 : 0000;  -- TempX2:	  DW 0
+           0F9 : 0000;  -- TempY2:	  DW 0
+           0FA : 0000;  -- JobsComp: DW 0 ; Number of jobs that have  been completed
+           0FB : 0021;  -- JobCount: DW &H21 ; Variable used for getting jobs
+           0FC : 0000;  -- CurrJob:  DW 0
+           0FD : 0000;  -- BestDist: DW 0
+           0FE : 0000;  -- deltaX:	  DW 0
+           0FF : 0000;  -- deltaY:	  DW 0
+           100 : 0000;  -- CurrX:	  DW &H00
+           101 : 0000;  -- CurrY:	  DW &H00
+           102 : 0000;  -- NextX:    DW &H0000 ; Target X Position in grid space
+           103 : 0000;  -- NextY:    DW &H0000 ; Target Y Position in grid space
+           104 : 0000;  -- Angle:	  DW 0
+           105 : 0000;  -- Mag:	  DW 0
+           106 : 0000;  -- Iterator: DW &H0000 ; Used for loops as counter
+           107 : FFFF;  -- NegOne:   DW -1
+           108 : 0000;  -- Zero:     DW 0
+           109 : 0001;  -- One:      DW 1
+           10A : 0002;  -- Two:      DW 2
+           10B : 0003;  -- Three:    DW 3
+           10C : 0004;  -- Four:     DW 4
+           10D : 0005;  -- Five:     DW 5
+           10E : 0006;  -- Six:      DW 6
+           10F : 0007;  -- Seven:    DW 7
+           110 : 0008;  -- Eight:    DW 8
+           111 : 0009;  -- Nine:     DW 9
+           112 : 000A;  -- Ten:      DW 10
+           113 : 0032;  -- Fifty:	  DW 50
+           114 : 07D0;  -- TwoK:	  DW 2000
+           115 : 0064;  -- FSlow:    DW 100       ; 100 is about the lowest value that will move at all
+           116 : FF9C;  -- RSlow:    DW -100
+           117 : 01F4;  -- FFast:    DW 500       ; 500 is a fair clip (511 is max)
+           118 : FE0C;  -- RFast:    DW -500
+           119 : 012C;  -- FMed:	  DW 300
+           11A : FED4;  -- RMed:	  DW -300
+           11B : 0001;  -- Mask0:    	DW &B00000001
+           11C : 0002;  -- Mask1:    	DW &B00000010
+           11D : 0004;  -- Mask2:    	DW &B00000100
+           11E : 0008;  -- Mask3:    	DW &B00001000
+           11F : 0010;  -- Mask4:    	DW &B00010000
+           120 : 0020;  -- Mask5:    	DW &B00100000
+           121 : 0040;  -- Mask6:  	DW &B01000000
+           122 : 0080;  -- Mask7:	    DW &B10000000
+           123 : 0014;  -- StartMask: 	DW &B10100
+           124 : 00FF;  -- AllSonar: 	DW &B11111111
+           125 : 01DC;  -- OneMeter: 	DW 476        ; one meter in 2.1mm units
+           126 : 00EE;  -- HalfMeter: 	DW 238        ; half meter in 2.1mm units
+           127 : 0122;  -- TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
+           128 : 0245;  -- TwoFeet2:	DW 581		  ; ~2ft in 1.05mm units
+           129 : 020E;  -- CW90:		DW 526		  ; Clockwise 90 degrees, ie. 270 degrees
+           12A : 00AF;  -- CCW90:		DW 175		  ; Counter clockwise 90 degrees
+           12B : 006E;  -- MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
+           12C : 1190;  -- I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90
+           12D : 0190;  -- I2CRCmd:  	DW &H0190     ; write nothing, read one byte, addr 0x90
+           12E : 0010;  -- ClkIn: 	  	DW &H10
+           12F : 0021;  -- Rqst:		DW &H21
+           130 : 0030;  -- PkUp:		DW &H30
+           131 : 0040;  -- DrpOff:		DW &H40
+           132 : 0050;  -- TmLft:		DW &H50
+           133 : 0060;  -- ClkOut:		DW &H60
+           134 : 0090;  -- Done:		DW &H90
+           135 : 0384;  -- Jobs_Addr:	DW 900
            384 : 0000;  -- Job1X1:	  DW &H0000
            385 : 0000;  -- Job1Y1:	  DW &H0000
            386 : 0000;  -- Job1X2:   DW &H0000
