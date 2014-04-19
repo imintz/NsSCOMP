@@ -384,8 +384,8 @@ AllSonar: 	DW &B11111111
 OneMeter: 	DW 476        ; one meter in 2.1mm units
 HalfMeter: 	DW 238        ; half meter in 2.1mm units
 TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
-TwoFeet2:	DW 581		  ; ~2ft in 1.05mm units
-CW90:		DW 526		  ; Clockwise 90 degrees, ie. 270 degrees
+TwoFeet2:	DW 550		  ; ~2ft in 1.05mm units
+CW90:		DW 590		  ; Clockwise 90 degrees, ie. 270 degrees
 CCW90:		DW 175		  ; Counter clockwise 90 degrees
 MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90

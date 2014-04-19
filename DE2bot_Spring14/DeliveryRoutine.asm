@@ -20,10 +20,12 @@ WaitForUser:
 	XOR     Mask4       ; KEY3 is active low; invert SAFETY to match
 	JPOS    WaitForUser ; one of those is not ready, so try again
 
-Main: ; "Real" program starts here.
-	LOAD	One
+Main: ; "Real" program starts here.	
+	LOAD	Four
 	STORE	CurrX
 	STORE	CurrY
+	CALL	GoToLongWall
+	JUMP	HERE
 	LOAD	ClkIn
 	OUT		UART
 	CALL	WaitForUART
@@ -31,7 +33,8 @@ Main: ; "Real" program starts here.
 	CALL	WaitForUART
 	IN		UART
 	CALL	GetJobs
-	CALL	JobSelect	
+	CALL	JobSelect
+	
 	
 	
 	
@@ -125,36 +128,213 @@ GetJobs:
 		
 	RETURN
 	
+PickUpJob:
+		LOAD	PkUp
+		ADD		CurrJob
+		OUT		UART
+		LOAD	NextX
+		STORE	CurrX
+		LOAD	NextY
+		STORE	CurrY
+		LOAD	NNextX
+		STORE	NextX
+		LOAD	NNextY
+		STORE	NextY
+		
+		LOAD	Four
+		OUT		BEEP
+		CALL	Wait3
+		LOAD	Zero
+		OUT		BEEP
+		
+		IN		UART
+		
+		RETURN	
+		
+DropOffJob:
+		LOAD	DrpOff
+		ADD		CurrJob
+		OUT		UART
+		LOAD	NextX
+		STORE	CurrX
+		LOAD	NextY
+		STORE	CurrY
+		
+		LOAD	Four
+		OUT		BEEP
+		CALL	Wait3
+		LOAD	Zero
+		OUT		BEEP
+		
+		IN		UART
+		
+		LOAD	CurrJob
+		SUB		One
+		MULT	Four
+		ADD		Jobs_Addr
+		STORE	Temp
+		LOAD	NegOne
+		ISTORE	Temp
+		
+		RETURN	
+	
+GoToDest:
+	LOAD  NextY
+	SUB	  CurrY
+	STORE deltaY
+	LOAD  NextX
+	SUB	  CurrX
+	STORE deltaX
+	LOAD  Zero
+	STORE Iterator
+xLoop:
+	SUB		deltaX
+	JZERO	EndXLoop
+	CALL	Go2Feet
+	LOAD	Iterator
+	ADDI	1
+	STORE 	Iterator
+	JUMP	xLoop
+EndXLoop:
+	CALL	Turn90CW
+	LOAD	Zero
+	STORE	Iterator
+yLoop:
+	SUB		deltaY
+	JZERO	EndYLoop
+	CALL	Go2Feet
+	LOAD	Iterator
+	ADDI	1
+	STORE 	Iterator
+	JUMP	yLoop
+EndYLoop:
+	LOAD	One
+	OUT		BEEP
+	CALL	Wait3
+	LOAD	Zero
+	OUT		BEEP
+
+	RETURN
+	
 GoToLongWall:
 		OUT		RESETODO
 		LOAD	Zero
-		ADDI	6		;creates mask 0000110 to enable sonars 2 and 3
+		ADDI	12		;creates mask 0000110 to enable sonars 2 and 3
 		OUT		SONAREN
+		LOAD	CurrX
+		MULT	Two
+		SUB		One
+		MULT	OneFtSonar
+		STORE	DstChk
 KeepTurning: ; Turn until the two sonar values are close enough 
-		LOAD	FSlow
+		LOAD	Zero
+		ADDI	30
 		OUT		LVELCMD
-		LOAD	RSlow
+		ADDI	-60
 		OUT		RVELCMD
 		IN		DIST2
+		OUT		SSEG1
+		JNEG	KeepTurning
 		STORE	Temp
 		IN		DIST3
+		OUT		SSEG2
+		JNEG	KeepTurning
 		SUB		TEMP	; Get difference of Sonar 2 and 3
-		JPOS	SkipABS
-		MULT	NegOne;
-SkipABS:
-		ADDI	-5
+		CALL	Abs
+		OUT		LCD
+		ADDI	-100
 		JPOS	KeepTurning
+		IN		DIST2
+		SUB		DstChk
+		CALL	Abs
+		ADDI	-200
+		JPOS	KeepTurning
+		
+		LOAD	Zero
+		OUT		LVELCMD
+		OUT		RVELCMD
+		CALL	Wait1
+		OUT		RESETODO
+FixWallAngle:
+
+		LOAD	Zero
+		ADDI	30
+		OUT		RVELCMD
+		ADDI	-60
+		OUT		LVELCMD
+		IN		THETA
+		ADDI	-50
+		JNEG	FixWallAngle
+		LOAD	Zero
+		OUT		LVELCMD
+		OUT		RVELCMD	
+		CALL	Wait1	
 		;Now go towards the wall
 GoToWall:
 		LOAD	FMed
 		OUT		RVELCMD
 		OUT		LVELCMD
 		IN		DIST2
-		ADDI	-5
+		OUT		LCD
+		ADDI	-610
 		JPOS	GoToWall
+		
+		LOAD	Zero
+		OUT		RVELCMD
+		OUT		LVELCMD
+		RETURN
+		
+Go2Feet:
+	IN		LPOS
+	STORE	TempX1
+G2FLoop:
+	LOAD	FMed
+	OUT		RVELCMD
+	OUT		LVELCMD
+	IN		LPOS
+	SUB		TempX1
+	SUB		TwoFeet2
+	JNEG	G2FLoop;
+	LOAD	Zero
+	OUT		LVELCMD
+	OUT		RVELCMD
+	RETURN
+	
+Turn90CW:
+	OUT		RESETODO
+Turn90CWLoop:
+	LOAD	FMed
+	OUT		LVELCMD
+	LOAD	RMed
+	OUT		RVELCMD
+	IN		THETA
+	JZERO	Turn90CWLoop
+	SUB		CW90
+	JPOS	Turn90CWLoop
+	LOAD	Zero
+	OUT		LVELCMD
+	OUT		RVELCMD
+	RETURN
+	
+Turn90CCW:
+	OUT		RESETODO
+Turn90CCWLoop:
+	LOAD	FMed
+	OUT		RVELCMD
+	LOAD	RMed
+	OUT		LVELCMD
+	IN		THETA
+	SUB		CCW90
+	JNEG	Turn90CCWLoop
+	LOAD	Zero
+	OUT		LVELCMD
+	OUT		RVELCMD
+	RETURN		
 		
 
 JobSelect:
+	LOAD	Zero
+	STORE	CurrJob
 	LOAD	One
 	STORE	JobCount
 	ADD		TwoK
@@ -163,21 +343,25 @@ JobSelect:
 	STORE	Temp
 SelectLoop:
 	ILOAD	Temp
-	STORE	TempX1	
+	STORE	TempX1
 	OUT		LCD
 	CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
+	LOAD	TempX1
+	JNEG	SkipSet
 	ILOAD	Temp
 	STORE	TempY1
 	OUT		LCD
 	CALL	Wait3
 	LOAD	CurrX
 	SUB		TempX1
+	CALL	Abs
 	STORE	TempX2
 	LOAD	CurrY
 	SUB		TempY1
+	CALL	Abs
 	STORE	TempY2
 	MULT	TempY2
 	STORE	TempY2
@@ -190,15 +374,15 @@ SelectLoop:
 	CALL	Wait3
 	
 	SUB		BestDist
-	OUT		LCD
-	CALL	Wait3
+	;OUT		LCD
+	;CALL	Wait3
 	JPOS	SkipSet
 	LOAD	TempX2
 	STORE	BestDist
-	OUT		LCD
-	CALL	Wait3
 	LOAD	JobCount
 	Store	CurrJob
+	OUT		LCD
+	CALL	Wait3
 SkipSet:
 	LOAD	Temp
 	ADDI	3
@@ -208,8 +392,41 @@ SkipSet:
 	STORE	JobCount
 	ADDI	-9
 	JNEG	SelectLoop
-	RETURN
 	
+	LOAD	CurrJob
+	OUT		LCD
+	CALL	Wait3
+	SUB		One
+	MULT	Four
+	ADD		Jobs_Addr
+	STORE	Temp
+	ILOAD	Temp
+	STORE	NextX
+	OUT		LCD
+	CALL	Wait3
+	LOAD	Temp
+	ADDI	1
+	STORE	Temp
+	ILOAD	Temp
+	STORE	NextY
+	OUT		LCD
+	CALL	Wait3
+	LOAD	Temp
+	ADDI	1
+	STORE	Temp
+	ILOAD	Temp
+	STORE	NNextX
+	OUT		LCD
+	CALL	Wait3
+	LOAD	Temp
+	ADDI	1
+	STORE	Temp
+	ILOAD	Temp
+	STORE	NNextY
+	OUT		LCD
+	CALL	Wait3
+	RETURN
+		
 
 	
 	
@@ -246,7 +463,15 @@ TabLookUp:
 	STORE	Mag
 	RETURN
 		
-		
+Abs:
+		JPOS	SkipAbs
+		JZERO	SkipAbs	
+		STORE	TempAbs
+		XOR		MaskAll
+		SUB		MaskAll
+SkipAbs:	
+		RETURN	
+			
 	
 
 ; This subroutine will get the battery voltage,
@@ -311,6 +536,7 @@ BlockI2C:
 ; Variables
 Temp:     DW 0 ; "Temp" is not a great name, but can be helpful
 WaitTemp: DW 0
+TempAbs:  DW 0
 TempX1:	  DW 0
 TempY1:	  DW 0
 TempX2:	  DW 0
@@ -322,11 +548,14 @@ BestDist: DW 0
 CurrX:	  DW &H00
 CurrY:	  DW &H00
 NextX:    DW &H0000 ; Target X Position in grid space
-;NextX_A: DW &H0000 ; Target X position in absolute location (measured/odometry)
+NNextX:   DW &H0000 ; Target X position 
 NextY:    DW &H0000 ; Target Y Position in grid space
+NNextY:   DW &H0000 ; Target Y position
+deltaX:	  DW 0
+deltaY:	  DW 0
 Angle:	  DW 0
 Mag:	  DW 0
-;NextY_A: DW &H0000 ; Target Y position in absolute location (measured/odometry)
+DstChk:	  DW 0
 Iterator: DW &H0000 ; Used for loops as counter
 
 ; Constants
@@ -361,11 +590,16 @@ Mask5:    	DW &B00100000
 Mask6:  	DW &B01000000
 Mask7:	    DW &B10000000
 MaskL2:		DW &H0F
+MaskAll:	DW &HFFFF
 StartMask: 	DW &B10100
 AllSonar: 	DW &B11111111
 OneMeter: 	DW 476        ; one meter in 2.1mm units
 HalfMeter: 	DW 238       ; half meter in 2.1mm units
 TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
+OneFtSonar: DW 305
+TwoFeet2:	DW 550		  ; ~2ft in 1.05mm units
+CW90:		DW 590		  ; Clockwise 90 degrees, ie. 270 degrees
+CCW90:		DW 175
 MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90
 I2CRCmd:  	DW &H0190     ; write nothing, read one byte, addr 0x90
