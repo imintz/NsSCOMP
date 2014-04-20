@@ -20,26 +20,72 @@ WaitForUser:
 	XOR     Mask4       ; KEY3 is active low; invert SAFETY to match
 	JPOS    WaitForUser ; one of those is not ready, so try again
 
-Main: ; "Real" program starts here.	
-	LOAD	Four
-	STORE	CurrX
-	STORE	CurrY
-	CALL	GoToLongWall
-	JUMP	HERE
-	LOAD	ClkIn
+Main:
+	;CALL	Turn90CCW
+	;CALL	Go2Feet
+	
+	;JUMP	HERE
+
+	LOAD	Done
 	OUT		UART
 	CALL	WaitForUART
 	IN		UART
 	CALL	WaitForUART
 	IN		UART
+	
+	LOAD	Zero
+	STORE	JobsComp
+	CALL	WheelComp
+	LOAD	One
+	STORE	CurrX
+	STORE	CurrY
+	CALL	ClockIn
 	CALL	GetJobs
-	CALL	JobSelect
 	
+	MainLoop:
+		LOAD	JobsComp
+		ADDI	-8
+		JZERO	EndMainLoop
+		CALL	JobSelect
+		CALL	DispNextPos
+		CALL	GoToDest
+		CALL	PickUpJob
+		CALL	DispNextPos
+		CALL	GoToDest
+		CALL	DropOffJob
+		JUMP	MainLoop
 	
+	EndMainLoop:
+		LOAD	One
+		STORE	NextX
+		STORE	NextY
+		CALL	GoToDest		
+		CALL	ClockOut
+		LOAD	Done
+		OUT		UART
 	
+	JUMP	HERE
 	
 HERE: JUMP HERE
-
+	
+Main2: ; "Real" program starts here.	
+	CALL	WheelComp
+	LOAD	Five
+	STORE	CurrX
+	STORE	CurrY
+	CALL	ClockIn
+	CALL	GetJobs
+	CALL	JobSelect
+	CALL	DispNextPos
+	CALL	GoToDest
+	CALL	PickUpJob
+	CALL	DispNextPos
+	CALL	GoToDest
+	CALL	DropOffJob
+	CALL	ClockOut
+	
+	LOAD	Done
+	OUT		UART	
 	
 ;***** SUBROUTINES
 
@@ -63,7 +109,15 @@ Wait3:
 	LOAD	WaitTemp
 	RETURN
 	
-
+DispNextPos:
+	STORE	WaitTemp
+	LOAD	NextX
+	OUT		SSEG1
+	LOAD	NextY
+	OUT		SSEG2
+	LOAD	WaitTemp
+	RETURN
+	
 GetJobs:
 	LOAD	Rqst
 	STORE	JobCount
@@ -175,45 +229,87 @@ DropOffJob:
 		STORE	Temp
 		LOAD	NegOne
 		ISTORE	Temp
+		LOAD	JobsComp
+		ADD		One
+		STORE	JobsComp
 		
-		RETURN	
+		RETURN
+		
+ClockIn:
+	LOAD	ClkIn
+	OUT		UART
+	CALL	WaitForUART
+	IN		UART
+	CALL	WaitForUART
+	IN		UART	
+	RETURN
+		
+ClockOut:
+	LOAD	ClkOut
+	OUT		UART
+	CALL	WaitforUART
+	IN		UART
+	CALL	WaitforUART
+	IN		UART
+	RETURN
+
 	
 GoToDest:
 	LOAD  NextY
 	SUB	  CurrY
 	STORE deltaY
+	CALL  Abs
+	STORE AbsDeltaY
 	LOAD  NextX
 	SUB	  CurrX
 	STORE deltaX
+	CALL  Abs
+	STORE AbsDeltaX
 	LOAD  Zero
 	STORE Iterator
-xLoop:
-	SUB		deltaX
-	JZERO	EndXLoop
-	CALL	Go2Feet
-	LOAD	Iterator
-	ADDI	1
-	STORE 	Iterator
-	JUMP	xLoop
-EndXLoop:
-	CALL	Turn90CW
-	LOAD	Zero
-	STORE	Iterator
-yLoop:
-	SUB		deltaY
-	JZERO	EndYLoop
-	CALL	Go2Feet
-	LOAD	Iterator
-	ADDI	1
-	STORE 	Iterator
-	JUMP	yLoop
-EndYLoop:
-	LOAD	One
-	OUT		BEEP
-	CALL	Wait3
-	LOAD	Zero
-	OUT		BEEP
+	
+	
+		
+	yLoop:
+		SUB		AbsDeltaY
+		JZERO	EndYLoop
+		LOAD	deltaY
+		CALL	G2F
+		LOAD	Iterator
+		ADDI	1
+		STORE 	Iterator
+		JUMP	yLoop
+	EndYLoop:
+		CALL	Turn90CW
+		LOAD	Zero
+		STORE	Iterator
+	
+	xLoop:
+		
+		SUB		AbsDeltaX
+		JZERO	EndXLoop
+		LOAD	deltaX
+		CALL	G2F
+		LOAD	Iterator
+		ADDI	1
+		STORE 	Iterator
+		JUMP	xLoop
+	EndXLoop:
+		LOAD	One
+		OUT		BEEP
+		CALL	Wait3
+		LOAD	Zero
+		OUT		BEEP
+		
+	CALL	Turn90CCW
 
+	RETURN
+G2F:
+	JNEG	G2FR
+	CALL	Go2Feet
+	RETURN
+G2FR:
+	CALL	Go2FeetR
 	RETURN
 	
 GoToLongWall:
@@ -226,7 +322,7 @@ GoToLongWall:
 		SUB		One
 		MULT	OneFtSonar
 		STORE	DstChk
-KeepTurning: ; Turn until the two sonar values are close enough 
+	KeepTurning: ; Turn until the two sonar values are close enough 
 		LOAD	Zero
 		ADDI	30
 		OUT		LVELCMD
@@ -250,13 +346,10 @@ KeepTurning: ; Turn until the two sonar values are close enough
 		ADDI	-200
 		JPOS	KeepTurning
 		
-		LOAD	Zero
-		OUT		LVELCMD
-		OUT		RVELCMD
-		CALL	Wait1
+		CALL	FixWheels
 		OUT		RESETODO
-FixWallAngle:
-
+	
+	FixWallAngle:
 		LOAD	Zero
 		ADDI	30
 		OUT		RVELCMD
@@ -266,15 +359,15 @@ FixWallAngle:
 		ADDI	-50
 		JNEG	FixWallAngle
 		LOAD	Zero
-		OUT		LVELCMD
-		OUT		RVELCMD	
-		CALL	Wait1	
+		CALL	FixWheels	
 		;Now go towards the wall
-GoToWall:
-		LOAD	FMed
+	GoToWall:
+		LOAD	FRMed
 		OUT		RVELCMD
+		LOAD	FLMed
 		OUT		LVELCMD
 		IN		DIST2
+		JNEG	GoToWall
 		OUT		LCD
 		ADDI	-610
 		JPOS	GoToWall
@@ -287,48 +380,90 @@ GoToWall:
 Go2Feet:
 	IN		LPOS
 	STORE	TempX1
-G2FLoop:
-	LOAD	FMed
-	OUT		RVELCMD
-	OUT		LVELCMD
+	
+	G2FLoop:
+		LOAD	FRMed
+		OUT		RVELCMD
+		LOAD	FLMed
+		OUT		LVELCMD
+		IN		LPOS
+		SUB		TempX1
+		SUB		TwoFeet2
+		JNEG	G2FLoop;
+		LOAD	Zero
+		OUT		LVELCMD
+		OUT		RVELCMD
+		
+	RETURN
+	
+Go2FeetR:
 	IN		LPOS
-	SUB		TempX1
-	SUB		TwoFeet2
-	JNEG	G2FLoop;
-	LOAD	Zero
-	OUT		LVELCMD
-	OUT		RVELCMD
+	STORE	TempX1
+	
+	G2FRLoop:
+		LOAD	RRMed
+		OUT		RVELCMD
+		LOAD	RLMed
+		OUT		LVELCMD
+		IN		LPOS
+		SUB		TempX1
+		CALL	Abs
+		SUB		TwoFeet2
+		JNEG	G2FRLoop;
+		LOAD	Zero
+		OUT		LVELCMD
+		OUT		RVELCMD
+		
 	RETURN
 	
 Turn90CW:
 	OUT		RESETODO
-Turn90CWLoop:
-	LOAD	FMed
-	OUT		LVELCMD
-	LOAD	RMed
-	OUT		RVELCMD
-	IN		THETA
-	JZERO	Turn90CWLoop
-	SUB		CW90
-	JPOS	Turn90CWLoop
-	LOAD	Zero
-	OUT		LVELCMD
-	OUT		RVELCMD
+	
+	Turn90CWLoop:
+		LOAD	FLMed
+		OUT		LVELCMD
+		LOAD	RRMed
+		OUT		RVELCMD
+		IN		THETA
+		JZERO	Turn90CWLoop
+		SUB		CW90
+		JPOS	Turn90CWLoop
+		CALL	FixWheels
+		
 	RETURN
 	
 Turn90CCW:
 	OUT		RESETODO
-Turn90CCWLoop:
-	LOAD	FMed
-	OUT		RVELCMD
-	LOAD	RMed
+	
+	Turn90CCWLoop:
+		LOAD	FRMed
+		OUT		RVELCMD
+		LOAD	RLMed
+		OUT		LVELCMD
+		IN		THETA
+		SUB		CCW90
+		JNEG	Turn90CCWLoop
+		CALL	FixWheels
+	RETURN	
+	
+FixWheels:
+	STORE	WaitTemp
+	OUT     TIMER
+FWloop: 
+	LOAD	Zero
+	ADDI	-10
 	OUT		LVELCMD
-	IN		THETA
-	SUB		CCW90
-	JNEG	Turn90CCWLoop
+	OUT		RVELCMD
+	IN      TIMER
+	OUT     LEDS
+	ADDI    -10
+	JNEG    FWloop
+	
 	LOAD	Zero
 	OUT		LVELCMD
 	OUT		RVELCMD
+	LOAD	WaitTemp
+	
 	RETURN		
 		
 
@@ -341,37 +476,37 @@ JobSelect:
 	STORE	BestDist
 	LOAD	Jobs_Addr
 	STORE	Temp
-SelectLoop:
-	ILOAD	Temp
-	STORE	TempX1
-	OUT		LCD
-	CALL	Wait3
-	LOAD	Temp
-	ADDI	1
-	STORE	Temp
-	LOAD	TempX1
-	JNEG	SkipSet
-	ILOAD	Temp
-	STORE	TempY1
-	OUT		LCD
-	CALL	Wait3
-	LOAD	CurrX
-	SUB		TempX1
-	CALL	Abs
-	STORE	TempX2
-	LOAD	CurrY
-	SUB		TempY1
-	CALL	Abs
-	STORE	TempY2
-	MULT	TempY2
-	STORE	TempY2
-	LOAD	TempX2
-	MULT	TempX2
-	ADD		TempY2
-	SQRT
-	STORE	TempX2
-	OUT		LCD
-	CALL	Wait3
+	SelectLoop:
+		ILOAD	Temp
+		STORE	TempX1
+		;OUT		LCD
+		;CALL	Wait3
+		LOAD	Temp
+		ADDI	1
+		STORE	Temp
+		LOAD	TempX1
+		JNEG	SkipSet
+		ILOAD	Temp
+		STORE	TempY1
+		;OUT		LCD
+		;CALL	Wait3
+		LOAD	CurrX
+		SUB		TempX1
+		CALL	Abs
+		STORE	TempX2
+		LOAD	CurrY
+		SUB		TempY1
+		CALL	Abs
+		STORE	TempY2
+		MULT	TempY2
+		STORE	TempY2
+		LOAD	TempX2
+		MULT	TempX2
+		ADD		TempY2
+		SQRT
+		STORE	TempX2
+		;OUT		LCD
+		;CALL	Wait3
 	
 	SUB		BestDist
 	;OUT		LCD
@@ -381,50 +516,52 @@ SelectLoop:
 	STORE	BestDist
 	LOAD	JobCount
 	Store	CurrJob
-	OUT		LCD
-	CALL	Wait3
-SkipSet:
-	LOAD	Temp
-	ADDI	3
-	STORE	Temp
-	LOAD	JobCount
-	ADDI	1
-	STORE	JobCount
-	ADDI	-9
-	JNEG	SelectLoop
+	;OUT		LCD
+	;CALL	Wait3
+	
+	SkipSet:
+		LOAD	Temp
+		ADDI	3
+		STORE	Temp
+		LOAD	JobCount
+		ADDI	1
+		STORE	JobCount
+		ADDI	-9
+		JNEG	SelectLoop
 	
 	LOAD	CurrJob
 	OUT		LCD
-	CALL	Wait3
+	;CALL	Wait3
 	SUB		One
 	MULT	Four
 	ADD		Jobs_Addr
 	STORE	Temp
 	ILOAD	Temp
 	STORE	NextX
-	OUT		LCD
-	CALL	Wait3
+	;OUT		LCD
+	;CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
 	ILOAD	Temp
 	STORE	NextY
-	OUT		LCD
-	CALL	Wait3
+	;OUT		LCD
+	;CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
 	ILOAD	Temp
 	STORE	NNextX
-	OUT		LCD
-	CALL	Wait3
+	;OUT		LCD
+	;CALL	Wait3
 	LOAD	Temp
 	ADDI	1
 	STORE	Temp
 	ILOAD	Temp
 	STORE	NNextY
-	OUT		LCD
-	CALL	Wait3
+	;OUT		LCD
+	;CALL	Wait3
+	
 	RETURN
 		
 
@@ -469,9 +606,40 @@ Abs:
 		STORE	TempAbs
 		XOR		MaskAll
 		SUB		MaskAll
-SkipAbs:	
+	SkipAbs:	
 		RETURN	
-			
+
+WheelComp:
+		IN		SWITCHES
+		OUT		LEDS
+		STORE	Temp
+		AND		Mask0
+		STORE	Sw0
+		JPOS	RComp
+		LOAD	Temp
+		AND		Mask1
+		STORE	Sw1
+		JPOS	LComp
+		RETURN
+		
+	RComp:		
+		LOAD	FRMed
+		ADDI	17
+		STORE	FRMed
+		LOAD	RRMed
+		ADDI	17
+		STORE	RRMed
+		RETURN
+		
+	LComp:		
+		LOAD	FLMed
+		ADDI	17
+		STORE	FLMed
+		LOAD	RLMed
+		ADDI	17
+		STORE	RLMed
+		RETURN
+					
 	
 
 ; This subroutine will get the battery voltage,
@@ -552,11 +720,16 @@ NNextX:   DW &H0000 ; Target X position
 NextY:    DW &H0000 ; Target Y Position in grid space
 NNextY:   DW &H0000 ; Target Y position
 deltaX:	  DW 0
+AbsDeltaX: DW 0
+AbsDeltaY: DW 0
 deltaY:	  DW 0
 Angle:	  DW 0
 Mag:	  DW 0
 DstChk:	  DW 0
 Iterator: DW &H0000 ; Used for loops as counter
+MainIterator: DW 0
+Sw0:	  DW 0
+Sw1:	  DW 0
 
 ; Constants
 NegOne:   DW -1
@@ -577,8 +750,10 @@ FSlow:    DW 100       ; 100 is about the lowest value that will move at all
 RSlow:    DW -100
 FFast:    DW 500       ; 500 is a fair clip (511 is max)
 RFast:    DW -500
-FMed:	  DW 300
-RMed:	  DW -300
+FLMed:	  DW 300
+RLMed:	  DW -300
+FRMed:	  DW 300
+RRMed:	  DW -300
 ; Masks of multiple bits can be constructed by, for example,
 ; LOAD Mask0; OR Mask2; OR Mask4, etc.
 Mask0:    	DW &B00000001
@@ -598,8 +773,8 @@ HalfMeter: 	DW 238       ; half meter in 2.1mm units
 TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
 OneFtSonar: DW 305
 TwoFeet2:	DW 550		  ; ~2ft in 1.05mm units
-CW90:		DW 590		  ; Clockwise 90 degrees, ie. 270 degrees
-CCW90:		DW 175
+CW90:		DW 580		  ; Clockwise 90 degrees, ie. 270 degrees
+CCW90:		DW 120
 MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90
 I2CRCmd:  	DW &H0190     ; write nothing, read one byte, addr 0x90
@@ -615,298 +790,6 @@ Done:		DW &H90
 
 Table_Addr:	DW 600
 Jobs_Addr:	DW 900
-
-		  
-		  ORG 600
-Tab1S1Ang:	DW 0
-Tab1S1Dst:	DW 0
-Tab1S2Ang:	DW 0
-Tab1S2Dst:	DW 290
-Tab1S3Ang:	DW 0
-Tab1S3Dst:	DW 581
-Tab1S4Ang:	DW 0
-Tab1S4Dst:	DW 871
-Tab1S5Ang:	DW 0
-Tab1S5Dst:	DW 1161
-Tab1S6Ang:	DW 526
-Tab1S6Dst:	DW 290
-Tab1S7Ang:	DW 613
-Tab1S7Dst:	DW 411
-Tab1S8Ang:	DW 649
-Tab1S8Dst:	DW 649
-Tab1S9Ang:	DW 665
-Tab1S9Dst:	DW 918
-Tab1S10Ang:	DW 674
-Tab1S10Dst:	DW 1197
-Tab1S11Ang:	DW 526
-Tab1S11Dst:	DW 581
-Tab1S12Ang:	DW 577
-Tab1S12Dst:	DW 649
-Tab1S13Ang:	DW 613
-Tab1S13Dst:	DW 821
-Tab1S14Ang:	DW 635
-Tab1S14Dst:	DW 1047
-Tab1S15Ang:	DW 649
-Tab1S15Dst:	DW 1298
-Tab1S16Ang:	DW 526
-Tab1S16Dst:	DW 871
-Tab1S17Ang:	DW 562
-Tab1S17Dst:	DW 918
-Tab1S18Ang:	DW 591
-Tab1S18Dst:	DW 1047
-Tab1S19Ang:	DW 613
-Tab1S19Dst:	DW 1232
-Tab1S20Ang:	DW 692
-Tab1S20Dst:	DW 1451
-Tab1S21Ang:	DW 526
-Tab1S21Dst:	DW 1161
-Tab1S22Ang:	DW 553
-Tab1S22Dst:	DW 1197
-Tab1S23Ang:	DW 577
-Tab1S23Dst:	DW 1298
-Tab1S24Ang:	DW 598
-Tab1S24Dst:	DW 1451
-Tab1S25Ang:	DW 613
-Tab1S25Dst:	DW 1642
-
-Tab2S1Ang:	DW 0
-Tab2S1Dst:	DW 0
-Tab2S2Ang:	DW 0
-Tab2S2Dst:	DW 0
-Tab2S3Ang:	DW 0
-Tab2S3Dst:	DW 0
-Tab2S4Ang:	DW 0
-Tab2S4Dst:	DW 0
-Tab2S5Ang:	DW 0
-Tab2S5Dst:	DW 0
-Tab2S6Ang:	DW 0
-Tab2S6Dst:	DW 0
-Tab2S7Ang:	DW 0
-Tab2S7Dst:	DW 0
-Tab2S8Ang:	DW 0
-Tab2S8Dst:	DW 0
-Tab2S9Ang:	DW 0
-Tab2S9Dst:	DW 0
-Tab2S10Ang:	DW 0
-Tab2S10Dst:	DW 0
-Tab2S11Ang:	DW 0
-Tab2S11Dst:	DW 0
-Tab2S12Ang:	DW 0
-Tab2S12Dst:	DW 0
-Tab2S13Ang:	DW 0
-Tab2S13Dst:	DW 0
-Tab2S14Ang:	DW 0
-Tab2S14Dst:	DW 0
-Tab2S15Ang:	DW 0
-Tab2S15Dst:	DW 0
-Tab2S16Ang:	DW 0
-Tab2S16Dst:	DW 0
-Tab2S17Ang:	DW 0
-Tab2S17Dst:	DW 0
-Tab2S18Ang:	DW 0
-Tab2S18Dst:	DW 0
-Tab2S19Ang:	DW 0
-Tab2S19Dst:	DW 0
-Tab2S20Ang:	DW 0
-Tab2S20Dst:	DW 0
-Tab2S21Ang:	DW 0
-Tab2S21Dst:	DW 0
-Tab2S22Ang:	DW 0
-Tab2S22Dst:	DW 0
-Tab2S23Ang:	DW 0
-Tab2S23Dst:	DW 0
-Tab2S24Ang:	DW 0
-Tab2S24Dst:	DW 0
-Tab2S25Ang:	DW 0
-Tab2S25Dst:	DW 0
-
-Tab3S1Ang:	DW 0
-Tab3S1Dst:	DW 0
-Tab3S2Ang:	DW 0
-Tab3S2Dst:	DW 0
-Tab3S3Ang:	DW 0
-Tab3S3Dst:	DW 0
-Tab3S4Ang:	DW 0
-Tab3S4Dst:	DW 0
-Tab3S5Ang:	DW 0
-Tab3S5Dst:	DW 0
-Tab3S6Ang:	DW 0
-Tab3S6Dst:	DW 0
-Tab3S7Ang:	DW 0
-Tab3S7Dst:	DW 0
-Tab3S8Ang:	DW 0
-Tab3S8Dst:	DW 0
-Tab3S9Ang:	DW 0
-Tab3S9Dst:	DW 0
-Tab3S10Ang:	DW 0
-Tab3S10Dst:	DW 0
-Tab3S11Ang:	DW 0
-Tab3S11Dst:	DW 0
-Tab3S12Ang:	DW 0
-Tab3S12Dst:	DW 0
-Tab3S13Ang:	DW 0
-Tab3S13Dst:	DW 0
-Tab3S14Ang:	DW 0
-Tab3S14Dst:	DW 0
-Tab3S15Ang:	DW 0
-Tab3S15Dst:	DW 0
-Tab3S16Ang:	DW 0
-Tab3S16Dst:	DW 0
-Tab3S17Ang:	DW 0
-Tab3S17Dst:	DW 0
-Tab3S18Ang:	DW 0
-Tab3S18Dst:	DW 0
-Tab3S19Ang:	DW 0
-Tab3S19Dst:	DW 0
-Tab3S20Ang:	DW 0
-Tab3S20Dst:	DW 0
-Tab3S21Ang:	DW 0
-Tab3S21Dst:	DW 0
-Tab3S22Ang:	DW 0
-Tab3S22Dst:	DW 0
-Tab3S23Ang:	DW 0
-Tab3S23Dst:	DW 0
-Tab3S24Ang:	DW 0
-Tab3S24Dst:	DW 0
-Tab3S25Ang:	DW 0
-Tab3S25Dst:	DW 0
-
-Tab4S1Ang:	DW 0
-Tab4S1Dst:	DW 0
-Tab4S2Ang:	DW 0
-Tab4S2Dst:	DW 0
-Tab4S3Ang:	DW 0
-Tab4S3Dst:	DW 0
-Tab4S4Ang:	DW 0
-Tab4S4Dst:	DW 0
-Tab4S5Ang:	DW 0
-Tab4S5Dst:	DW 0
-Tab4S6Ang:	DW 0
-Tab4S6Dst:	DW 0
-Tab4S7Ang:	DW 0
-Tab4S7Dst:	DW 0
-Tab4S8Ang:	DW 0
-Tab4S8Dst:	DW 0
-Tab4S9Ang:	DW 0
-Tab4S9Dst:	DW 0
-Tab4S10Ang:	DW 0
-Tab4S10Dst:	DW 0
-Tab4S11Ang:	DW 0
-Tab4S11Dst:	DW 0
-Tab4S12Ang:	DW 0
-Tab4S12Dst:	DW 0
-Tab4S13Ang:	DW 0
-Tab4S13Dst:	DW 0
-Tab4S14Ang:	DW 0
-Tab4S14Dst:	DW 0
-Tab4S15Ang:	DW 0
-Tab4S15Dst:	DW 0
-Tab4S16Ang:	DW 0
-Tab4S16Dst:	DW 0
-Tab4S17Ang:	DW 0
-Tab4S17Dst:	DW 0
-Tab4S18Ang:	DW 0
-Tab4S18Dst:	DW 0
-Tab4S19Ang:	DW 0
-Tab4S19Dst:	DW 0
-Tab4S20Ang:	DW 0
-Tab4S20Dst:	DW 0
-Tab4S21Ang:	DW 0
-Tab4S21Dst:	DW 0
-Tab4S22Ang:	DW 0
-Tab4S22Dst:	DW 0
-Tab4S23Ang:	DW 0
-Tab4S23Dst:	DW 0
-Tab4S24Ang:	DW 0
-Tab4S24Dst:	DW 0
-Tab4S25Ang:	DW 0
-Tab4S25Dst:	DW 0
-
-Tab5S1Ang:	DW 0
-Tab5S1Dst:	DW 0
-Tab5S2Ang:	DW 0
-Tab5S2Dst:	DW 0
-Tab5S3Ang:	DW 0
-Tab5S3Dst:	DW 0
-Tab5S4Ang:	DW 0
-Tab5S4Dst:	DW 0
-Tab5S5Ang:	DW 0
-Tab5S5Dst:	DW 0
-Tab5S6Ang:	DW 0
-Tab5S6Dst:	DW 0
-Tab5S7Ang:	DW 0
-Tab5S7Dst:	DW 0
-Tab5S8Ang:	DW 0
-Tab5S8Dst:	DW 0
-Tab5S9Ang:	DW 0
-Tab5S9Dst:	DW 0
-Tab5S10Ang:	DW 0
-Tab5S10Dst:	DW 0
-Tab5S11Ang:	DW 0
-Tab5S11Dst:	DW 0
-Tab5S12Ang:	DW 0
-Tab5S12Dst:	DW 0
-Tab5S13Ang:	DW 0
-Tab5S13Dst:	DW 0
-Tab5S14Ang:	DW 0
-Tab5S14Dst:	DW 0
-Tab5S15Ang:	DW 0
-Tab5S15Dst:	DW 0
-Tab5S16Ang:	DW 0
-Tab5S16Dst:	DW 0
-Tab5S17Ang:	DW 0
-Tab5S17Dst:	DW 0
-Tab5S18Ang:	DW 0
-Tab5S18Dst:	DW 0
-Tab5S19Ang:	DW 0
-Tab5S19Dst:	DW 0
-Tab5S20Ang:	DW 0
-Tab5S20Dst:	DW 0
-Tab5S21Ang:	DW 0
-Tab5S21Dst:	DW 0
-Tab5S22Ang:	DW 0
-Tab5S22Dst:	DW 0
-Tab5S23Ang:	DW 0
-Tab5S23Dst:	DW 0
-Tab5S24Ang:	DW 0
-Tab5S24Dst:	DW 0
-Tab5S25Ang:	DW 0
-Tab5S25Dst:	DW 0
-	  
-
-		  ORG 900
-Job1X1:	  DW &H0000
-Job1Y1:	  DW &H0000
-Job1X2:   DW &H0000
-Job1Y2:   DW &H0000
-Job2X1:	  DW &H0000
-Job2Y1:	  DW &H0000
-Job2X2:   DW &H0000
-Job2Y2:   DW &H0000
-Job3X1:	  DW &H0000
-Job3Y1:	  DW &H0000
-Job3X2:   DW &H0000
-Job3Y2:   DW &H0000
-Job4X1:	  DW &H0000
-Job4Y1:	  DW &H0000
-Job4X2:   DW &H0000
-Job4Y2:   DW &H0000
-Job5X1:	  DW &H0000
-Job5Y1:	  DW &H0000
-Job5X2:   DW &H0000
-Job5Y2:   DW &H0000
-Job6X1:	  DW &H0000
-Job6Y1:	  DW &H0000
-Job6X2:   DW &H0000
-Job6Y2:   DW &H0000
-Job7X1:	  DW &H0000
-Job7Y1:	  DW &H0000
-Job7X2:   DW &H0000
-Job7Y2:   DW &H0000
-Job8X1:	  DW &H0000
-Job8Y1:	  DW &H0000
-Job8X2:   DW &H0000
-Job8Y2:   DW &H0000
 
 
 
