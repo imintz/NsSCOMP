@@ -220,6 +220,9 @@ DropOffJob:
 		LOAD	Zero
 		OUT		BEEP
 		
+		CALL	WaitForUART
+		IN		UART
+		CALL	WaitForUART	; Clear the UART input FIFO of the base station OK
 		IN		UART
 		
 		LOAD	CurrJob
