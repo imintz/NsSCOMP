@@ -53,7 +53,7 @@ Main:
 		CALL	DispNextPos
 		CALL	GoToDest
 		CALL	DropOffJob
-		CALL	GoHome
+		;CALL	GoHome
 		
 		JUMP	MainLoop
 	
@@ -241,7 +241,7 @@ ClockOut:
 
 	
 GoToDest:
-	OUT	  RESETODO
+	;OUT	  RESETODO
 	LOAD  NextY
 	SUB	  CurrY
 	STORE deltaY
@@ -387,6 +387,16 @@ FWloop:
 	ADDI    -10
 	JNEG    FWloop
 	
+FWloop2: 
+	LOAD	Zero
+	ADDI	10
+	OUT		LVELCMD
+	OUT		RVELCMD
+	IN      TIMER
+	OUT     LEDS
+	ADDI    -10
+	JNEG    FWloop2
+	
 	LOAD	Zero
 	OUT		LVELCMD
 	OUT		RVELCMD
@@ -527,10 +537,10 @@ WheelComp:
 		
 	RComp:		
 		LOAD	FRMed
-		ADDI	17
+		ADDI	18			
 		STORE	FRMed
 		LOAD	RRMed
-		ADDI	17
+		ADDI	-21
 		STORE	RRMed
 		RETURN
 		
@@ -539,7 +549,7 @@ WheelComp:
 		ADDI	17
 		STORE	FLMed
 		LOAD	RLMed
-		ADDI	17
+		ADDI	-17
 		STORE	RLMed
 		RETURN
 					
@@ -675,9 +685,9 @@ OneMeter: 	DW 476        ; one meter in 2.1mm units
 HalfMeter: 	DW 238       ; half meter in 2.1mm units
 TwoFeet:  	DW 290        ; ~2ft in 2.1mm units
 OneFtSonar: DW 305
-TwoFeet2:	DW 500		  ; ~2ft in 1.05mm units
-CW90:		DW 590		  ; Clockwise 90 degrees, ie. 270 degrees
-CCW90:		DW 120
+TwoFeet2:	DW 490		  ; ~2ft in 1.05mm units
+CW90:		DW 595		  ; Clockwise 90 degrees, ie. 270 degrees
+CCW90:		DW 130
 MinBatt:  	DW 110        ; 11V - minimum safe battery voltage
 I2CWCmd:  	DW &H1190     ; write one byte, read one byte, addr 0x90
 I2CRCmd:  	DW &H0190     ; write nothing, read one byte, addr 0x90
